@@ -1,0 +1,6 @@
+{
+  "name": "Lapangku Landing Page",
+  "description": "Landing page for Lapangku, a mobile app for booking sports fields. Developed for Project Based Learning (PBL).",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
