@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Download, Github, MapPin, CalendarClock, ShieldCheck, Menu, X, Smartphone, ArrowRight, Activity, Search, CreditCard, Trophy, Users, CheckCircle2, PlayCircle, Dribbble, ChevronDown } from 'lucide-react';
+import { Download, Github, MapPin, CalendarClock, ShieldCheck, Menu, X, Smartphone, ArrowRight, Activity, Search, CreditCard, Trophy, Users, CheckCircle2, PlayCircle, Dribbble, ChevronDown, QrCode, Server, Code } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 export default function App() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
+  const [showQR, setShowQR] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -46,7 +47,7 @@ export default function App() {
 
       {/* Navbar */}
       <div className="fixed top-0 inset-x-0 z-50 px-4 sm:px-6 lg:px-8 pt-4">
-        <header className="max-w-7xl mx-auto bg-white/70 backdrop-blur-md border border-white/80 rounded-full px-5 py-3 md:py-4 flex justify-between items-center shadow-sm transition-all">
+        <header className="max-w-7xl mx-auto bg-white/70 backdrop-blur-md border border-white/50 rounded-full px-5 py-3 md:py-4 flex justify-between items-center shadow-sm transition-all duration-300">
           <div className="flex items-center gap-2 lg:gap-3">
             <div className="bg-emerald-500 p-2 rounded-xl text-white shadow-sm flex-shrink-0">
               <Smartphone className="w-5 h-5 lg:w-6 lg:h-6" />
@@ -139,11 +140,32 @@ export default function App() {
                  transition={{ duration: 0.6, delay: 0.3 }}
                  className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4"
               >
-                 <button className="w-full sm:w-auto flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-8 py-4 rounded-full shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:-translate-y-0.5 transition-all duration-300">
-                    <Download className="w-5 h-5" />
-                    Download App
-                 </button>
-                 <a href="https://github.com/Maulanahb/Lapangku" target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto flex items-center justify-center gap-2 bg-white hover:bg-slate-50 text-slate-700 font-bold px-8 py-4 rounded-full shadow-sm border border-slate-200 hover:shadow hover:-translate-y-0.5 transition-all duration-300">
+                 <div className="relative w-full sm:w-auto">
+                   <button 
+                     onMouseEnter={() => setShowQR(true)}
+                     onMouseLeave={() => setShowQR(false)}
+                     className="w-full flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-8 py-4 rounded-full shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 transition-all duration-300 hover:scale-105 active:scale-95"
+                   >
+                      <Download className="w-5 h-5" />
+                      Download App
+                   </button>
+                   <AnimatePresence>
+                     {showQR && (
+                       <motion.div 
+                         initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                         animate={{ opacity: 1, y: 0, scale: 1 }}
+                         exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                         className="absolute top-full left-1/2 -translate-x-1/2 mt-4 bg-white p-4 rounded-2xl shadow-xl border border-slate-100 z-50 flex flex-col items-center gap-2 w-48 pointer-events-none"
+                       >
+                         <div className="w-32 h-32 bg-slate-50 rounded-xl flex items-center justify-center border-2 border-dashed border-emerald-200 text-emerald-400">
+                           <QrCode className="w-12 h-12" />
+                         </div>
+                         <span className="text-[11px] font-bold text-slate-500 text-center uppercase tracking-wider">Scan Untuk Mengunduh</span>
+                       </motion.div>
+                     )}
+                   </AnimatePresence>
+                 </div>
+                 <a href="https://github.com/Maulanahb/Lapangku" target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto flex items-center justify-center gap-2 bg-white hover:bg-slate-50 text-slate-700 font-bold px-8 py-4 rounded-full shadow-sm border border-slate-200 hover:shadow transition-all duration-300 hover:scale-105 active:scale-95">
                     <Github className="w-5 h-5" />
                     Lihat GitHub
                  </a>
@@ -158,7 +180,8 @@ export default function App() {
               <motion.div
                  animate={{ y: [0, -15, 0] }}
                  transition={{ repeat: Infinity, duration: 5, ease: "easeInOut" }}
-                 className="relative rotate-[12deg] w-[260px] lg:w-[300px] bg-slate-900 rounded-[44px] lg:rounded-[52px] p-2 sm:p-2.5 shadow-2xl shadow-slate-900/40 border-[8px] border-slate-800"
+                 style={{ transformStyle: "preserve-3d", transform: "perspective(1000px) rotateX(15deg) rotateY(-20deg) rotateZ(10deg)" }}
+                 className="relative w-[260px] lg:w-[300px] bg-slate-900 rounded-[44px] lg:rounded-[52px] p-2 sm:p-2.5 shadow-2xl shadow-slate-900/40 border-[8px] border-slate-800"
               >
                  {/* Internal Screen Container (Simplified) */}
                  <div className="w-full h-[540px] lg:h-[600px] bg-white rounded-[32px] lg:rounded-[36px] overflow-hidden relative">
@@ -243,6 +266,49 @@ export default function App() {
            </div>
         </div>
 
+        {/* Latar Belakang Section */}
+        <div className="pt-8 pb-16">
+           <motion.div 
+             initial={{ opacity: 0, y: 20 }}
+             whileInView={{ opacity: 1, y: 0 }}
+             viewport={{ once: true }}
+             transition={{ duration: 0.5 }}
+             className="bg-emerald-900 rounded-[40px] p-8 md:p-12 relative overflow-hidden flex flex-col md:flex-row items-center gap-8 lg:gap-16 shadow-2xl"
+           >
+              <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-500/20 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/3"></div>
+              
+              <div className="flex-1 relative z-10 w-full">
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-800/50 border border-emerald-700 text-emerald-300 text-xs font-bold uppercase tracking-wider mb-6">
+                  <Activity className="w-4 h-4" /> The Problem
+                </div>
+                <h2 className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-white mb-6 leading-tight">Berawal Dari Sulitnya Mencari Jadwal Kosong.</h2>
+                <p className="text-emerald-100/80 text-lg leading-relaxed mb-6">
+                  Seringkali komunitas olahraga kesulitan menemukan lapangan yang tersedia. Harus menelepon satu per satu, datang langsung hanya untuk mengecek jadwal, hingga risiko terjadinya <span className="font-bold text-white">double booking</span> karena pencatatan manual.
+                </p>
+                <p className="text-emerald-100/80 text-lg leading-relaxed">
+                  Lapangku dirancang untuk mendigitalisasi proses tersebut. Mengubah pencarian manual menjadi pencarian real-time dalam genggaman, demi efisiensi waktu pengelola maupun pengguna.
+                </p>
+              </div>
+
+              <div className="w-full md:w-2/5 relative z-10">
+                 <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-6 shadow-xl">
+                    <div className="flex items-center gap-2 mb-4 border-b border-white/10 pb-4">
+                       <Users className="w-5 h-5 text-emerald-400" />
+                       <span className="text-white font-medium">Masalah Umum</span>
+                    </div>
+                    <ul className="space-y-4">
+                      {["Informasi jadwal tidak terpusat", "Risiko bentrok jadwal sangat tinggi", "Metode reservasi masih konvensional"].map((issue, i) => (
+                        <li key={i} className="flex items-start gap-3">
+                          <X className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
+                          <span className="text-emerald-50/90 text-sm">{issue}</span>
+                        </li>
+                      ))}
+                    </ul>
+                 </div>
+              </div>
+           </motion.div>
+        </div>
+
         {/* Feature Sections */}
         <div id="fitur" className="pt-20">
            
@@ -258,87 +324,83 @@ export default function App() {
              <p className="text-slate-600">Kami mengintegrasikan setiap tahap pencarian, pemesanan, hingga pembayaran menjadi satu ekosistem yang kohesif.</p>
            </motion.div>
 
-           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-20">
+           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-20 max-w-6xl mx-auto">
               {isLoading ? (
                 <>
-                  {[...Array(4)].map((_, idx) => (
-                    <div 
-                      key={idx}
-                      className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm flex flex-col justify-between h-[300px] sm:h-[320px] animate-pulse"
-                    >
-                      <div>
-                        <div className="w-14 h-14 bg-slate-200 rounded-2xl mb-6"></div>
-                        <div className="h-6 bg-slate-200 rounded-full w-3/4 mb-4"></div>
-                        <div className="h-4 bg-slate-200 rounded-full w-full mb-2"></div>
-                        <div className="h-4 bg-slate-200 rounded-full w-5/6 mb-2"></div>
-                        <div className="h-4 bg-slate-200 rounded-full w-4/6 mt-6"></div>
-                      </div>
-                    </div>
-                  ))}
+                  <div className="md:col-span-2 bg-white rounded-[32px] p-8 md:p-10 border border-slate-100 shadow-sm flex flex-col h-[300px] animate-pulse">
+                     <div className="w-14 h-14 bg-slate-200 rounded-2xl mb-6"></div>
+                     <div className="h-6 bg-slate-200 rounded-full w-2/4 mb-4"></div>
+                     <div className="h-4 bg-slate-200 rounded-full w-full mb-2"></div>
+                     <div className="h-4 bg-slate-200 rounded-full w-4/5"></div>
+                  </div>
+                  <div className="bg-white rounded-[32px] p-8 md:p-10 border border-slate-100 shadow-sm flex flex-col h-[300px] animate-pulse">
+                     <div className="w-14 h-14 bg-slate-200 rounded-2xl mb-6"></div>
+                     <div className="h-6 bg-slate-200 rounded-full w-3/4 mb-4"></div>
+                     <div className="h-4 bg-slate-200 rounded-full w-full mb-2"></div>
+                     <div className="h-4 bg-slate-200 rounded-full w-4/5"></div>
+                  </div>
+                  <div className="bg-white rounded-[32px] p-8 md:p-10 border border-slate-100 shadow-sm flex flex-col h-[300px] animate-pulse">
+                     <div className="w-14 h-14 bg-slate-200 rounded-2xl mb-6"></div>
+                     <div className="h-6 bg-slate-200 rounded-full w-3/4 mb-4"></div>
+                     <div className="h-4 bg-slate-200 rounded-full w-full mb-2"></div>
+                     <div className="h-4 bg-slate-200 rounded-full w-4/5"></div>
+                  </div>
+                  <div className="md:col-span-2 bg-white rounded-[32px] p-8 md:p-10 border border-slate-100 shadow-sm flex flex-col h-[300px] animate-pulse">
+                     <div className="w-14 h-14 bg-slate-200 rounded-2xl mb-6"></div>
+                     <div className="h-6 bg-slate-200 rounded-full w-2/4 mb-4"></div>
+                     <div className="h-4 bg-slate-200 rounded-full w-full mb-2"></div>
+                     <div className="h-4 bg-slate-200 rounded-full w-4/5"></div>
+                  </div>
                 </>
               ) : (
                 <>
-                  {/* Clean Consistent Cards mapped via structure */}
-                  {[
-                    {
-                      id: "tentang",
-                      title: "Platform Overview",
-                      desc: "Lapangku merupakan manifestasi modern standar universal untuk menyederhanakan mobilitas dan aksesibilitas fasilitas olahraga harian.",
-                      icon: Activity,
-                      isHighlight: true,
-                      badge: "Versi 1.0"
-                    },
-                    {
-                      id: "pencarian",
-                      title: "Pencarian Lapangan",
-                      desc: "Eksplorasi cerdas secara spesifik berdasarkan kategori fasilitas, rating, jarak radius, maupun ketersediaan jam terdekat.",
-                      icon: MapPin,
-                    },
-                    {
-                      id: "jadwal",
-                      title: "Reservasi Real-time",
-                      desc: "Sinkronisasi eksklusif untuk mencegah jadwal ganda. Lakukan inspeksi slot waktu jam kosong secara transparan.",
-                      icon: CalendarClock,
-                    },
-                    {
-                      id: "bayar",
-                      title: "Pembayaran Aman",
-                      desc: "Integrasi mutakhir yang menerima berbagai gerbang pembayaran digital secara otomatis dan terverifikasi di tempat.",
-                      icon: ShieldCheck,
-                    }
-                  ].map((card, idx) => (
-                    <motion.div 
-                      key={card.id}
-                      id={card.id === 'tentang' ? 'tentang' : undefined}
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.5, delay: idx * 0.1 }}
-                      className={`bg-white rounded-3xl p-8 border ${card.isHighlight ? 'border-emerald-200/60 shadow-emerald-500/5' : 'border-slate-100 shadow-slate-200/20'} shadow-xl hover:-translate-y-1.5 transition-transform duration-300 flex flex-col justify-between`}
-                    >
-                      <div>
-                        {card.isHighlight ? (
-                          <div className="inline-flex items-center space-x-1.5 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-100 mb-6">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                            <span className="text-[10px] sm:text-xs font-bold text-emerald-700 uppercase tracking-widest">{card.badge}</span>
-                          </div>
-                        ) : (
-                          <div className="w-14 h-14 bg-slate-50 text-emerald-500 border border-slate-100 rounded-2xl flex items-center justify-center mb-6 shadow-sm">
-                            <card.icon className="w-6 h-6" />
-                          </div>
-                        )}
-                        <h4 className="font-extrabold text-lg sm:text-xl text-slate-900 mb-3 leading-snug">{card.title}</h4>
-                        <p className="text-sm text-slate-600 leading-relaxed">
-                          {card.desc}
-                        </p>
+                  <div id="tentang" className="md:col-span-2 bg-slate-900 rounded-[32px] p-8 md:p-10 text-white hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 relative overflow-hidden group">
+                     <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl group-hover:bg-emerald-500/20 transition-all duration-300"></div>
+                     <div className="relative z-10">
+                       <div className="w-14 h-14 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center mb-6 border border-white/10 group-hover:scale-110 transition-transform duration-300 shadow-sm">
+                          <Activity className="w-6 h-6 text-emerald-400" />
+                       </div>
+                       <h3 className="text-2xl md:text-3xl font-extrabold mb-4 mt-2 tracking-tight">Platform Overview</h3>
+                       <p className="text-slate-400 text-base md:text-lg max-w-lg leading-relaxed">
+                         Lapangku merupakan manifestasi modern standar universal untuk menyederhanakan mobilitas dan aksesibilitas fasilitas olahraga harian.
+                       </p>
+                       <div className="mt-8 inline-flex items-center space-x-2 bg-emerald-500/20 px-3 py-1.5 rounded-lg border border-emerald-500/30">
+                          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                          <span className="text-[11px] font-bold text-emerald-300 uppercase tracking-widest">Versi Rilis 1.0</span>
+                       </div>
+                     </div>
+                  </div>
+
+                  <div className="bg-emerald-50 rounded-[32px] p-8 md:p-10 border border-emerald-100 hover:shadow-xl hover:shadow-emerald-200/50 hover:-translate-y-1 transition-all duration-300 group flex flex-col justify-between">
+                    <div>
+                      <div className="w-12 h-12 bg-white text-emerald-600 rounded-2xl flex items-center justify-center mb-6 shadow-sm group-hover:scale-110 transition-transform duration-300">
+                         <MapPin className="w-6 h-6" />
                       </div>
-                      {card.isHighlight && (
-                         <div className="mt-8 flex items-center gap-2 text-emerald-500 font-bold text-sm cursor-pointer hover:text-emerald-600 group">
-                           Jelajahi Sejarah PBL <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                         </div>
-                      )}
-                    </motion.div>
-                  ))}
+                      <h3 className="text-xl font-bold text-emerald-950 mb-3 tracking-tight">Pencarian Cepat</h3>
+                      <p className="text-emerald-800/80 leading-relaxed text-sm md:text-base">Temukan lapangan terdekat dalam hitungan detik berdasarkan lokasi & kategori.</p>
+                    </div>
+                  </div>
+
+                  <div className="bg-white rounded-[32px] p-8 border border-slate-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group shadow-sm flex flex-col justify-between">
+                    <div>
+                      <div className="w-12 h-12 bg-slate-50 text-blue-500 rounded-2xl flex items-center justify-center mb-6 border border-slate-100 shadow-sm group-hover:scale-110 transition-transform duration-300">
+                         <CalendarClock className="w-6 h-6" />
+                      </div>
+                      <h3 className="text-xl font-bold text-slate-900 mb-3 tracking-tight">Jadwal Real-time</h3>
+                      <p className="text-slate-500 leading-relaxed text-sm md:text-base">Sinkronisasi eksklusif demi mencegah jadwal ganda. Cek ketersediaan tanpa ragu.</p>
+                    </div>
+                  </div>
+
+                  <div className="md:col-span-2 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-[32px] p-8 md:p-10 text-white hover:shadow-xl hover:shadow-emerald-500/20 hover:-translate-y-1 transition-all duration-300 group overflow-hidden relative border border-emerald-400">
+                    <div className="absolute top-1/2 right-0 -translate-y-1/2 w-48 h-48 bg-white/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
+                    <div className="relative z-10 flex flex-col justify-center h-full">
+                       <div className="w-12 h-12 bg-white/20 backdrop-blur-md text-white rounded-2xl flex items-center justify-center mb-6 shadow-sm group-hover:scale-110 transition-transform duration-300">
+                          <ShieldCheck className="w-6 h-6" />
+                       </div>
+                       <h3 className="text-2xl md:text-3xl font-extrabold mb-3 tracking-tight">Pembayaran Terverifikasi</h3>
+                       <p className="text-emerald-50 text-sm md:text-base leading-relaxed max-w-md">Integrasi pembayaran digital instan melalui QRIS, Transfer Bank, dan e-Wallet dengan jaminan keamanan finansial penuh.</p>
+                    </div>
+                  </div>
                 </>
               )}
            </div>
@@ -418,6 +480,80 @@ export default function App() {
                   </div>
                   <h4 className="text-lg md:text-xl font-bold text-slate-900 mb-2">{step.title}</h4>
                   <p className="text-sm md:text-base text-slate-600 px-4">{step.desc}</p>
+                </motion.div>
+              ))}
+           </div>
+        </div>
+
+        {/* Tech Showcase Section */}
+        <div className="pt-10 pb-20">
+          <motion.div 
+             initial={{ opacity: 0, y: 20 }}
+             whileInView={{ opacity: 1, y: 0 }}
+             viewport={{ once: true }}
+             transition={{ duration: 0.5 }}
+             className="text-center max-w-3xl mx-auto"
+          >
+             <p className="text-slate-400 font-bold mb-6 uppercase tracking-widest text-xs">Dibangun Menggunakan Teknologi Modern</p>
+             <div className="flex flex-col sm:flex-row justify-center items-center gap-4 border border-slate-100 w-fit mx-auto px-8 py-6 rounded-3xl bg-white shadow-sm">
+                <div className="flex items-center gap-3">
+                   <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-500">
+                     <Smartphone className="w-5 h-5" />
+                   </div>
+                   <div className="text-left">
+                     <div className="font-bold text-slate-800 leading-none mb-1">Flutter</div>
+                     <div className="text-[10px] text-slate-500 font-medium uppercase tracking-wider">Mobile UI Framework</div>
+                   </div>
+                </div>
+                <div className="w-px h-10 bg-slate-200 hidden sm:block mx-4"></div>
+                <div className="h-px w-full bg-slate-200 block sm:hidden my-2"></div>
+                <div className="flex items-center gap-3">
+                   <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-500">
+                     <Server className="w-5 h-5" />
+                   </div>
+                   <div className="text-left">
+                     <div className="font-bold text-slate-800 leading-none mb-1">Go / Node.js</div>
+                     <div className="text-[10px] text-slate-500 font-medium uppercase tracking-wider">Backend Service</div>
+                   </div>
+                </div>
+             </div>
+          </motion.div>
+        </div>
+
+        {/* Team Section */}
+        <div className="py-10">
+           <motion.div 
+             initial={{ opacity: 0, y: 20 }}
+             whileInView={{ opacity: 1, y: 0 }}
+             viewport={{ once: true }}
+             transition={{ duration: 0.5 }}
+             className="text-center max-w-2xl mx-auto mb-16"
+           >
+             <h2 className="text-emerald-500 font-bold uppercase tracking-wider text-sm mb-3">Tim Pengembang</h2>
+             <h3 className="text-3xl sm:text-4xl font-extrabold text-slate-900 mb-4">Orang-Orang di Balik Lapangku</h3>
+             <p className="text-slate-600">Kolaborasi dalam mewujudkan solusi nyata berbasis teknologi dari kerangka Project Based Learning.</p>
+           </motion.div>
+           
+           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 mb-20">
+              {[
+                { name: "Maulana Ahmad", role: "Project Manager", initial: "MA", color: "bg-blue-100 text-blue-600 border-blue-200" },
+                { name: "Budi Santoso", role: "Mobile Developer", initial: "BS", color: "bg-emerald-100 text-emerald-600 border-emerald-200" },
+                { name: "Siti Rahma", role: "UI/UX Designer", initial: "SR", color: "bg-purple-100 text-purple-600 border-purple-200" },
+                { name: "Andi Saputra", role: "System Analyst", initial: "AS", color: "bg-amber-100 text-amber-600 border-amber-200" }
+              ].map((member, i) => (
+                <motion.div 
+                  key={i}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: i * 0.1 }}
+                  className="bg-white rounded-[32px] p-6 text-center border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+                >
+                  <div className={`w-20 h-20 mx-auto rounded-full flex items-center justify-center text-xl font-bold mb-5 border-4 ${member.color}`}>
+                     {member.initial}
+                  </div>
+                  <h4 className="font-extrabold text-slate-900 text-lg mb-1">{member.name}</h4>
+                  <span className="text-emerald-600 text-sm font-semibold">{member.role}</span>
                 </motion.div>
               ))}
            </div>
