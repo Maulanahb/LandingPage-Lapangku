@@ -22,11 +22,11 @@ export default function App() {
   };
 
   const faqs = [
-    { q: "Apa saja metode pembayaran yang didukung oleh Lapangku?", a: "Lapangku mendukung berbagai metode pembayaran cashless yang aman dan praktis. Saat ini, sistem kami terintegrasi dengan pembayaran via QRIS, Transfer Bank (Virtual Account untuk berbagai bank besar), serta e-Wallet (GoPay, OVO, DANA, dan ShopeePay). Semua transaksi diproses secara real-time." },
-    { q: "Bagaimana cara membatalkan jadwal lapangan yang sudah dipesan?", a: "Pembatalan sangat mudah dilakukan langsung dari aplikasi. Buka menu \"Pesanan Saya\", pilih tiket booking yang aktif, lalu tekan tombol \"Batalkan Pesanan\". Sistem akan otomatis memverifikasi status pesanan Anda. Pastikan untuk membaca batas waktu maksimal pembatalan (misalnya 24 jam sebelum jadwal) agar memenuhi syarat pengembalian dana." },
-    { q: "Bagaimana prosedur pengembalian dana (refund) jika saya batal main?", a: "Jika pembatalan dilakukan sebelum batas waktu yang ditentukan oleh pihak lapangan, dana Anda bisa dikembalikan. Setelah Anda menekan tombol batal, sistem akan memproses refund secara otomatis. Dana akan masuk kembali ke rekening atau e-Wallet yang Anda gunakan dalam estimasi waktu 1-3 hari kerja (tergantung metode pembayaran yang dipilih)." },
-    { q: "Apakah jadwal lapangan yang tampil di aplikasi selalu akurat dan real-time?", a: "Ya! Salah satu keunggulan utama Lapangku adalah sinkronisasi jadwal yang real-time (langsung terhubung dengan sistem pengelola lapangan). Begitu ada pengguna yang menyelesaikan pembayaran, slot waktu tersebut akan otomatis terkunci untuk mencegah terjadinya double booking atau jadwal bentrok." },
-    { q: "Apakah saya bisa mengubah jadwal (reschedule) pesanan yang sudah dibayar?", a: "Untuk saat ini, fitur ubah jadwal (reschedule) secara langsung masih dalam tahap pengembangan. Sebagai alternatif, Anda dapat membatalkan pesanan yang lama (meminta refund) dan membuat pesanan baru dengan jadwal yang sesuai, selama masih memenuhi syarat batas waktu pembatalan." }
+    { q: "Bagaimana cara melakukan pembayaran di Lapangku?", a: "Setelah memilih jadwal dan mengonfirmasi booking, Anda akan diarahkan ke halaman pembayaran. Lakukan transfer ke rekening yang tertera, lalu upload bukti pembayaran melalui aplikasi. Tim pengelola lapangan (Mitra) akan memverifikasi bukti pembayaran Anda, dan status booking akan berubah menjadi 'Dikonfirmasi' setelah disetujui." },
+    { q: "Bagaimana cara membatalkan jadwal lapangan yang sudah dipesan?", a: "Pembatalan dapat dilakukan langsung dari aplikasi. Buka menu 'Pesanan Saya', pilih tiket booking yang aktif, lalu tekan tombol 'Batalkan Pesanan'. Sistem akan otomatis memperbarui status pesanan Anda dan mengembalikan slot jadwal tersebut agar bisa dipesan oleh pengguna lain." },
+    { q: "Bagaimana prosedur pengembalian dana (refund) jika saya batal main?", a: "Karena pembayaran dilakukan secara manual via transfer bank, proses refund akan dikoordinasikan langsung antara Anda dan pihak pengelola lapangan (Mitra). Anda bisa menghubungi pengelola melalui fitur 'Hubungi CS' di aplikasi untuk mengatur pengembalian dana." },
+    { q: "Apakah jadwal lapangan yang tampil di aplikasi selalu akurat dan real-time?", a: "Ya! Salah satu keunggulan utama Lapangku adalah sinkronisasi jadwal secara real-time melalui Firebase Cloud Firestore. Begitu ada pengguna yang menyelesaikan booking, slot waktu tersebut akan otomatis terkunci untuk mencegah terjadinya double booking atau jadwal bentrok." },
+    { q: "Apa perbedaan akun Customer, Mitra, dan Admin di Lapangku?", a: "Lapangku memiliki tiga peran pengguna: Customer dapat mencari dan memesan lapangan; Mitra adalah pengelola lapangan yang bisa mengelola jadwal, memverifikasi pembayaran, serta melihat laporan pendapatan; Admin bertugas mengawasi seluruh sistem termasuk verifikasi akun Mitra dan monitoring aktivitas platform." }
   ];
 
   const handleScroll = (e: React.MouseEvent<HTMLAnchorElement>, targetId: string) => {
@@ -131,7 +131,7 @@ export default function App() {
                  transition={{ duration: 0.6, delay: 0.2 }}
                  className="text-slate-600 text-base sm:text-lg lg:text-xl md:max-w-xl mx-auto lg:mx-0 mb-8 sm:mb-10 leading-relaxed font-medium"
               >
-                 Platform praktis untuk mencari dan memesan jadwal lapangan olahraga kapan saja dan di mana saja. Temukan teman, sehat bersama dengan Lapangku.
+                 Platform berbasis mobile untuk mencari, memesan, dan mengelola jadwal lapangan olahraga secara digital. Dukung gaya hidup aktifmu bersama Lapangku.
               </motion.p>
               
               <motion.div 
@@ -258,8 +258,8 @@ export default function App() {
                       <CalendarClock className="w-5 h-5 sm:w-6 sm:h-6"/>
                    </div>
                    <div className="pr-2">
-                      <div className="text-[11px] sm:text-[12px] text-slate-500 font-medium mb-0.5">Berhasil Re-schedule</div>
-                      <div className="text-[13px] sm:text-[15px] font-bold text-slate-900">Futsal Senayan</div>
+                      <div className="text-[11px] sm:text-[12px] text-slate-500 font-medium mb-0.5">Booking Dikonfirmasi</div>
+                      <div className="text-[13px] sm:text-[15px] font-bold text-slate-900">Lapangan Futsal A</div>
                    </div>
                 </motion.div>
               )}
@@ -283,10 +283,10 @@ export default function App() {
                 </div>
                 <h2 className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-white mb-6 leading-tight">Berawal Dari Sulitnya Mencari Jadwal Kosong.</h2>
                 <p className="text-emerald-100/80 text-lg leading-relaxed mb-6">
-                  Seringkali komunitas olahraga kesulitan menemukan lapangan yang tersedia. Harus menelepon satu per satu, datang langsung hanya untuk mengecek jadwal, hingga risiko terjadinya <span className="font-bold text-white">double booking</span> karena pencatatan manual.
+                  Seringkali komunitas olahraga kesulitan menemukan lapangan yang tersedia. Harus menelepon satu per satu, datang langsung hanya untuk mengecek jadwal, hingga risiko terjadinya <span className="font-bold text-white">double booking</span> karena pencatatan manual oleh pengelola.
                 </p>
                 <p className="text-emerald-100/80 text-lg leading-relaxed">
-                  Lapangku dirancang untuk mendigitalisasi proses tersebut. Mengubah pencarian manual menjadi pencarian real-time dalam genggaman, demi efisiensi waktu pengelola maupun pengguna.
+                  Lapangku hadir sebagai solusi digitalisasi melalui aplikasi berbasis Flutter dan Firebase. Mengubah pencarian manual menjadi pencarian real-time dalam genggaman, demi efisiensi waktu pengelola (Mitra) maupun pengguna (Customer).
                 </p>
               </div>
 
@@ -362,7 +362,7 @@ export default function App() {
                        </div>
                        <h3 className="text-2xl md:text-3xl font-extrabold mb-4 mt-2 tracking-tight">Platform Overview</h3>
                        <p className="text-slate-400 text-base md:text-lg max-w-lg leading-relaxed">
-                         Lapangku merupakan manifestasi modern standar universal untuk menyederhanakan mobilitas dan aksesibilitas fasilitas olahraga harian.
+                         Lapangku adalah aplikasi mobile berbasis Flutter yang menghubungkan Customer dengan Mitra pengelola lapangan. Didukung oleh Firebase untuk autentikasi, database real-time, dan notifikasi push.
                        </p>
                        <div className="mt-8 inline-flex items-center space-x-2 bg-emerald-500/20 px-3 py-1.5 rounded-lg border border-emerald-500/30">
                           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
@@ -387,7 +387,7 @@ export default function App() {
                          <CalendarClock className="w-6 h-6" />
                       </div>
                       <h3 className="text-xl font-bold text-slate-900 mb-3 tracking-tight">Jadwal Real-time</h3>
-                      <p className="text-slate-500 leading-relaxed text-sm md:text-base">Sinkronisasi eksklusif demi mencegah jadwal ganda. Cek ketersediaan tanpa ragu.</p>
+                      <p className="text-slate-500 leading-relaxed text-sm md:text-base">Jadwal tersinkronisasi via Cloud Firestore untuk mencegah double booking. Cek ketersediaan tanpa ragu.</p>
                     </div>
                   </div>
 
@@ -397,8 +397,8 @@ export default function App() {
                        <div className="w-12 h-12 bg-white/20 backdrop-blur-md text-white rounded-2xl flex items-center justify-center mb-6 shadow-sm group-hover:scale-110 transition-transform duration-300">
                           <ShieldCheck className="w-6 h-6" />
                        </div>
-                       <h3 className="text-2xl md:text-3xl font-extrabold mb-3 tracking-tight">Pembayaran Terverifikasi</h3>
-                       <p className="text-emerald-50 text-sm md:text-base leading-relaxed max-w-md">Integrasi pembayaran digital instan melalui QRIS, Transfer Bank, dan e-Wallet dengan jaminan keamanan finansial penuh.</p>
+                       <h3 className="text-2xl md:text-3xl font-extrabold mb-3 tracking-tight">Konfirmasi Pembayaran</h3>
+                       <p className="text-emerald-50 text-sm md:text-base leading-relaxed max-w-md">Upload bukti pembayaran langsung dari aplikasi. Mitra memverifikasi transaksi Anda dengan cepat dan aman melalui sistem konfirmasi digital.</p>
                     </div>
                   </div>
                 </>
@@ -461,8 +461,8 @@ export default function App() {
               {[
                 { title: "Cari Lapangan", desc: "Pilih fasilitas terdekat dan tentukan jenis olahraga.", icon: Search },
                 { title: "Pilih Jadwal", desc: "Tentukan hari dan jam sesuai ketersediaan real-time.", icon: CalendarClock },
-                { title: "Pembayaran", desc: "Bayar menggunakan e-wallet atau transfer bank aman.", icon: CreditCard },
-                { title: "Mulai Main", desc: "Tunjukkan bukti booking dan langsung main tanpa antri!", icon: CheckCircle2 }
+                { title: "Pembayaran", desc: "Transfer ke rekening Mitra lalu upload bukti bayar di aplikasi.", icon: CreditCard },
+                { title: "Mulai Main", desc: "Setelah Mitra konfirmasi, tunjukkan bukti booking dan langsung main!", icon: CheckCircle2 }
               ].map((step, i) => (
                 <motion.div 
                   key={i}
@@ -512,8 +512,8 @@ export default function App() {
                      <Server className="w-5 h-5" />
                    </div>
                    <div className="text-left">
-                     <div className="font-bold text-slate-800 leading-none mb-1">Go / Node.js</div>
-                     <div className="text-[10px] text-slate-500 font-medium uppercase tracking-wider">Backend Service</div>
+                     <div className="font-bold text-slate-800 leading-none mb-1">Firebase</div>
+                     <div className="text-[10px] text-slate-500 font-medium uppercase tracking-wider">Backend & Cloud Functions</div>
                    </div>
                 </div>
              </div>
@@ -629,7 +629,7 @@ export default function App() {
               <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-500/20 rounded-full blur-3xl"></div>
               
               <h2 className="text-3xl md:text-5xl font-extrabold text-white mb-6 relative z-10">Siap Untuk Berkeringat Hari Ini?</h2>
-              <p className="text-slate-300 md:text-lg max-w-2xl mx-auto mb-10 relative z-10">Bergabunglah dengan ribuan orang yang sudah merasakan kemudahan booking lapangan olahraga dengan Lapangku.</p>
+              <p className="text-slate-300 md:text-lg max-w-2xl mx-auto mb-10 relative z-10">Rasakan kemudahan booking lapangan olahraga secara digital. Cari, pesan, bayar, dan main — semua dalam satu aplikasi.</p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4 relative z-10">
                 <button className="w-full sm:w-auto bg-emerald-500 hover:bg-emerald-400 text-white font-bold px-8 py-4 rounded-full shadow-lg shadow-emerald-500/30 hover:-translate-y-1 transition-all">
                    Download Sekarang
