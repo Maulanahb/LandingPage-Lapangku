@@ -99,6 +99,7 @@ export default function App() {
   const [customerScreen, setCustomerScreen] = useState(0); // 0: Splash, 1: Home, 2: Detail, 3: Payment, 4: Success
   const [mitraScreen, setMitraScreen] = useState(0); // 0: Dashboard, 1: Manage, 2: Verification, 3: QR Scanner
   const [isAutoplay, setIsAutoplay] = useState(true);
+  const [lastInteraction, setLastInteraction] = useState(Date.now());
 
   useEffect(() => {
     if (!isAutoplay) return;
@@ -112,13 +113,23 @@ export default function App() {
     return () => clearInterval(timer);
   }, [demoRole, isAutoplay]);
 
+  useEffect(() => {
+    if (isAutoplay) return;
+    const timer = setTimeout(() => {
+      setIsAutoplay(true);
+    }, 8000);
+    return () => clearTimeout(timer);
+  }, [isAutoplay, lastInteraction]);
+
   const selectCustomerScreen = (screen: number) => {
     setIsAutoplay(false);
+    setLastInteraction(Date.now());
     setCustomerScreen(screen);
   };
 
   const selectMitraScreen = (screen: number) => {
     setIsAutoplay(false);
+    setLastInteraction(Date.now());
     setMitraScreen(screen);
   };
 
@@ -136,11 +147,13 @@ export default function App() {
     if (swipePower < -swipeConfidenceThreshold || offset.x < -40) {
       // Swipe left -> Next screen
       setIsAutoplay(false);
+      setLastInteraction(Date.now());
       if (demoRole === 'customer') setCustomerScreen(c => (c + 1) % 3);
       else setMitraScreen(m => (m + 1) % 3);
     } else if (swipePower > swipeConfidenceThreshold || offset.x > 40) {
       // Swipe right -> Prev screen
       setIsAutoplay(false);
+      setLastInteraction(Date.now());
       if (demoRole === 'customer') setCustomerScreen(c => (c - 1 + 3) % 3);
       else setMitraScreen(m => (m - 1 + 3) % 3);
     }
@@ -416,6 +429,19 @@ export default function App() {
 
             {/* ═══ Phone Mockup ═══ */}
             <div className="flex-1 w-full max-w-[320px] lg:max-w-[400px] mx-auto lg:ml-auto relative flex flex-col items-center gap-6 z-10" style={{ perspective: "1000px" }}>
+              
+              {/* Tooltip Popup */}
+              <motion.div 
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 1.5, duration: 0.6, repeat: Infinity, repeatType: "reverse", repeatDelay: 4 }}
+                className="absolute top-24 lg:top-32 -right-8 lg:-right-20 bg-white text-slate-800 text-[10px] lg:text-xs font-bold px-3 py-2 rounded-2xl rounded-bl-none shadow-xl border border-slate-100 z-50 pointer-events-none hidden sm:block"
+              >
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xl">👋</span>
+                  <span>Coba geser<br/>layarnya!</span>
+                </div>
+              </motion.div>
               
               {/* Role Toggle Selector */}
               <div className="flex bg-white/80 backdrop-blur-md p-1 rounded-full border border-slate-200 shadow-md z-30 pointer-events-auto">
