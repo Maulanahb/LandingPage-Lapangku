@@ -129,6 +129,23 @@ export default function App() {
     else setMitraScreen(0);
   };
 
+  const handleDragEnd = (e: any, { offset, velocity }: any) => {
+    const swipePower = Math.abs(offset.x) * velocity.x;
+    const swipeConfidenceThreshold = 10000;
+    
+    if (swipePower < -swipeConfidenceThreshold || offset.x < -40) {
+      // Swipe left -> Next screen
+      setIsAutoplay(false);
+      if (demoRole === 'customer') setCustomerScreen(c => (c + 1) % 3);
+      else setMitraScreen(m => (m + 1) % 3);
+    } else if (swipePower > swipeConfidenceThreshold || offset.x > 40) {
+      // Swipe right -> Prev screen
+      setIsAutoplay(false);
+      if (demoRole === 'customer') setCustomerScreen(c => (c - 1 + 3) % 3);
+      else setMitraScreen(m => (m - 1 + 3) % 3);
+    }
+  };
+
   useEffect(() => {
     const timer = setInterval(() => {
       setActiveProblemSlide((prev) => (prev === 0 ? 1 : 0));
@@ -472,7 +489,14 @@ export default function App() {
                       </div>
                       
                       {/* Screens Container with transition */}
-                      <div className="w-full h-full text-slate-800 relative font-sans text-xs">
+                      <motion.div 
+                        className="w-full h-full text-slate-800 relative font-sans text-xs"
+                        drag="x"
+                        dragConstraints={{ left: 0, right: 0 }}
+                        dragElastic={0.2}
+                        dragDirectionLock
+                        onDragEnd={handleDragEnd}
+                      >
                         <AnimatePresence mode="wait">
                           {demoRole === 'customer' ? (
                             // ─── Customer Screens ───
@@ -1149,7 +1173,7 @@ export default function App() {
                             )
                           )}
                         </AnimatePresence>
-                      </div>
+                      </motion.div>
                   </div>
                  </div>
               </motion.div>
