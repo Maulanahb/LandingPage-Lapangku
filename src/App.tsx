@@ -398,7 +398,7 @@ export default function App() {
            </div>
 
             {/* ═══ Phone Mockup ═══ */}
-            <div className="flex-1 w-full max-w-[320px] lg:max-w-[400px] mx-auto lg:ml-auto relative flex flex-col items-center gap-6 z-10">
+            <div className="flex-1 w-full max-w-[320px] lg:max-w-[400px] mx-auto lg:ml-auto relative flex flex-col items-center gap-6 z-10" style={{ perspective: "1000px" }}>
               
               {/* Role Toggle Selector */}
               <div className="flex bg-white/80 backdrop-blur-md p-1 rounded-full border border-slate-200 shadow-md z-30 pointer-events-auto">
@@ -432,8 +432,8 @@ export default function App() {
               <motion.div
                  animate={{ 
                    y: [0, -15, 0],
-                   rotateX: 10,
-                   rotateY: -14,
+                   rotateX: 12,
+                   rotateY: -16,
                    rotateZ: 6
                  }}
                  whileHover={{ 
@@ -443,19 +443,32 @@ export default function App() {
                    scale: 1.03
                  }}
                  transition={{ 
-                   y: { repeat: Infinity, duration: 5, ease: "easeInOut" },
-                   default: { duration: 0.4, ease: "easeOut" }
+                   y: { repeat: Infinity, duration: 6, ease: "easeInOut" },
+                   default: { duration: 0.5, ease: "easeOut" }
                  }}
                  style={{ transformStyle: "preserve-3d" }}
                  className="relative w-[260px] lg:w-[290px] z-10 pointer-events-auto"
               >
                  {/* Phone frame */}
-                 <div className="bg-gradient-to-b from-slate-800 to-slate-900 rounded-[44px] lg:rounded-[48px] p-[10px] shadow-2xl shadow-slate-900/50">
+                 <div className="bg-gradient-to-br from-slate-700 via-slate-800 to-slate-900 rounded-[44px] lg:rounded-[48px] p-[10px] shadow-2xl shadow-slate-900/50 border border-slate-700/50 relative">
+                  
+                  {/* Phone Buttons */}
+                  <div className="absolute top-[100px] -left-[2px] w-[3px] h-[30px] bg-slate-700/80 rounded-l-md shadow-[inset_1px_0_1px_rgba(255,255,255,0.2)]"></div>
+                  <div className="absolute top-[150px] -left-[2px] w-[3px] h-[50px] bg-slate-700/80 rounded-l-md shadow-[inset_1px_0_1px_rgba(255,255,255,0.2)]"></div>
+                  <div className="absolute top-[210px] -left-[2px] w-[3px] h-[50px] bg-slate-700/80 rounded-l-md shadow-[inset_1px_0_1px_rgba(255,255,255,0.2)]"></div>
+                  <div className="absolute top-[130px] -right-[2px] w-[3px] h-[70px] bg-slate-700/80 rounded-r-md shadow-[inset_-1px_0_1px_rgba(255,255,255,0.2)]"></div>
+
                   {/* Internal Screen Container */}
-                  <div className="w-full h-[530px] lg:h-[580px] bg-[#F4F6F9] rounded-[34px] lg:rounded-[38px] overflow-hidden relative select-none">
+                  <div className="w-full h-[530px] lg:h-[580px] bg-[#F4F6F9] rounded-[34px] lg:rounded-[38px] overflow-hidden relative select-none shadow-[inset_0_0_8px_rgba(0,0,0,0.1)] ring-1 ring-slate-950/20">
+                      
+                      {/* Glass screen reflection overlay */}
+                      <div className="absolute inset-0 z-50 pointer-events-none rounded-[34px] lg:rounded-[38px] bg-gradient-to-tr from-transparent via-white/5 to-white/20 opacity-50"></div>
+                      <div className="absolute -top-[50%] -right-[50%] w-[100%] h-[200%] bg-white/5 rotate-45 transform pointer-events-none z-50"></div>
+
                       {/* Dynamic Island */}
-                      <div className="absolute top-3 inset-x-0 h-[22px] bg-slate-900 rounded-full w-[85px] mx-auto z-40 flex items-center justify-center gap-1">
-                        <div className="w-1.5 h-1.5 rounded-full bg-slate-700"></div>
+                      <div className="absolute top-3 inset-x-0 h-[24px] bg-black rounded-full w-[85px] mx-auto z-40 flex items-center justify-end px-2 shadow-sm shadow-black/50 border border-slate-700/50">
+                        <div className="w-2.5 h-2.5 rounded-full bg-slate-800/80 mr-3 border border-slate-700/50"></div>
+                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/80 shadow-[0_0_6px_rgba(16,185,129,0.8)]"></div>
                       </div>
                       
                       {/* Screens Container with transition */}
