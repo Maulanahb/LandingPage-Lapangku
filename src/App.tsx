@@ -183,7 +183,7 @@ export default function App() {
 
   // ─── Scroll spy for nav ────
   useEffect(() => {
-    const sections = ['beranda', 'fitur', 'tentang', 'faq'];
+    const sections = ['beranda', 'tentang', 'fitur', 'tim', 'faq'];
     const handleScroll = () => {
       for (const id of sections) {
         const el = document.getElementById(id);
@@ -231,8 +231,9 @@ export default function App() {
 
   const navItems = [
     { id: 'beranda', label: 'Beranda' },
-    { id: 'fitur', label: 'Fitur' },
     { id: 'tentang', label: 'Tentang' },
+    { id: 'fitur', label: 'Fitur' },
+    { id: 'tim', label: 'Tim' },
     { id: 'faq', label: 'FAQ' },
   ];
 
@@ -1614,7 +1615,7 @@ export default function App() {
         <div className="section-divider mb-10"></div>
 
         {/* ═══ Team Section ═══ */}
-        <div className="py-10">
+        <div id="tim" className="py-10">
            <motion.div 
              initial={{ opacity: 0, y: 20 }}
              whileInView={{ opacity: 1, y: 0 }}
@@ -1629,10 +1630,10 @@ export default function App() {
            
            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 lg:gap-6 mb-20">
               {[
-                { name: "Maulana Ahmad", role: "Project Manager", initial: "MA", gradient: "from-blue-500 to-indigo-500" },
-                { name: "Budi Santoso", role: "Mobile Developer", initial: "BS", gradient: "from-emerald-500 to-teal-500" },
-                { name: "Siti Rahma", role: "UI/UX Designer", initial: "SR", gradient: "from-violet-500 to-purple-500" },
-                { name: "Andi Saputra", role: "System Analyst", initial: "AS", gradient: "from-amber-500 to-orange-500" }
+                { name: "Maulana", role: "PM & Fullstack Customer", initial: "M", gradient: "from-blue-500 to-indigo-500" },
+                { name: "Maksum", role: "UI/UX Designer", initial: "MK", gradient: "from-violet-500 to-purple-500" },
+                { name: "Galuh", role: "Fullstack Admin", initial: "G", gradient: "from-amber-500 to-orange-500" },
+                { name: "Arsya", role: "Fullstack Mitra", initial: "A", gradient: "from-emerald-500 to-teal-500" }
               ].map((member, i) => (
                 <motion.div 
                   key={i}
