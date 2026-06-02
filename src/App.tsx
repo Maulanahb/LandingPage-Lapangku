@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Download, Github, MapPin, CalendarClock, ShieldCheck, Menu, X, Smartphone, ArrowRight, Activity, Search, CreditCard, Trophy, Users, CheckCircle2, PlayCircle, Dribbble, ChevronDown, QrCode, Server, Code, Star, Zap, Clock, Upload, Eye, UserCircle, Store, Shield, ArrowLeft, Heart, Plus, Bell, RefreshCw, Check, TrendingUp, Image } from 'lucide-react';
+import { Download, Github, MapPin, CalendarClock, ShieldCheck, Menu, X, Smartphone, ArrowRight, Activity, Search, CreditCard, Trophy, Users, CheckCircle2, PlayCircle, Dribbble, ChevronDown, QrCode, Server, Code, Star, Zap, Clock, Upload, Eye, UserCircle, Store, Shield, ArrowLeft, Heart, Plus, Bell, RefreshCw, Check, TrendingUp, Image, MoveHorizontal } from 'lucide-react';
 import { motion, AnimatePresence, useScroll, useMotionValueEvent } from 'motion/react';
 
 // ─── Typewriter Hook ─────────────────────────────────────────────
@@ -430,17 +430,26 @@ export default function App() {
             {/* ═══ Phone Mockup ═══ */}
             <div className="flex-1 w-full max-w-[320px] lg:max-w-[400px] mx-auto lg:ml-auto relative flex flex-col items-center gap-6 z-10" style={{ perspective: "1000px" }}>
               
-              {/* Tooltip Popup */}
+              {/* Premium Tooltip Popup */}
               <motion.div 
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 1.5, duration: 0.6, repeat: Infinity, repeatType: "reverse", repeatDelay: 4 }}
-                className="absolute top-24 lg:top-32 -right-8 lg:-right-20 bg-white text-slate-800 text-[10px] lg:text-xs font-bold px-3 py-2 rounded-2xl rounded-bl-none shadow-xl border border-slate-100 z-50 pointer-events-none hidden sm:block"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1, duration: 0.8 }}
+                className="absolute top-1/2 -translate-y-1/2 -right-8 lg:-right-16 z-50 pointer-events-none hidden md:flex"
               >
-                <div className="flex items-center gap-1.5">
-                  <span className="text-xl">👋</span>
-                  <span>Coba geser<br/>layarnya!</span>
-                </div>
+                 <motion.div
+                   animate={{ x: [-4, 4, -4] }}
+                   transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                   className="bg-white/95 backdrop-blur-md px-3.5 py-2.5 rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.3)] border border-white/50 flex items-center gap-3 relative before:content-[''] before:absolute before:top-1/2 before:-translate-y-1/2 before:-left-1.5 before:w-3 before:h-3 before:bg-white/95 before:rotate-45 before:border-l before:border-b before:border-white/50 before:rounded-sm"
+                 >
+                   <div className="w-8 h-8 rounded-full bg-[#1B6B3A]/10 flex items-center justify-center shrink-0">
+                     <MoveHorizontal className="w-4 h-4 text-[#1B6B3A]" />
+                   </div>
+                   <div className="flex flex-col">
+                     <span className="text-[11px] font-extrabold text-slate-800 leading-tight">Interaktif</span>
+                     <span className="text-[9px] font-semibold text-slate-500">Geser layar</span>
+                   </div>
+                 </motion.div>
               </motion.div>
               
               {/* Role Toggle Selector */}
