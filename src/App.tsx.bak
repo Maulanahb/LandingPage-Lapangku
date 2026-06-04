@@ -1,0 +1,2261 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { Download, Github, MapPin, CalendarClock, ShieldCheck, Menu, X, Smartphone, ArrowRight, Activity, Search, CreditCard, Trophy, Users, CheckCircle2, PlayCircle, Dribbble, ChevronDown, QrCode, Server, Code, Star, Zap, Clock, Upload, Eye, UserCircle, Store, Shield, ArrowLeft, Heart, Plus, Bell, RefreshCw, Check, TrendingUp, Image, Monitor, BarChart3, Settings, FileText, ChevronRight, Globe, Layout } from 'lucide-react';
+import { motion, AnimatePresence, useScroll, useMotionValueEvent } from 'motion/react';
+
+// ─── Typewriter Hook ─────────────────────────────────────────────
+function useTypewriter(words: string[], typingSpeed = 100, deletingSpeed = 60, pauseDuration = 2000) {
+  const [text, setText] = useState('');
+  const [wordIndex, setWordIndex] = useState(0);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  useEffect(() => {
+    const currentWord = words[wordIndex];
+
+    const timeout = setTimeout(() => {
+      if (!isDeleting) {
+        setText(currentWord.substring(0, text.length + 1));
+        if (text.length + 1 === currentWord.length) {
+          setTimeout(() => setIsDeleting(true), pauseDuration);
+        }
+      } else {
+        setText(currentWord.substring(0, text.length - 1));
+        if (text.length === 0) {
+          setIsDeleting(false);
+          setWordIndex((prev) => (prev + 1) % words.length);
+        }
+      }
+    }, isDeleting ? deletingSpeed : typingSpeed);
+
+    return () => clearTimeout(timeout);
+  }, [text, isDeleting, wordIndex, words, typingSpeed, deletingSpeed, pauseDuration]);
+
+  return text;
+}
+
+// ─── Animated Counter Hook ───────────────────────────────────────
+function useCounter(end: number, duration = 2000, startOnView = true) {
+  const [count, setCount] = useState(0);
+  const [hasStarted, setHasStarted] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!startOnView) {
+      setHasStarted(true);
+    }
+  }, [startOnView]);
+
+  useEffect(() => {
+    if (!startOnView || hasStarted) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setHasStarted(true);
+        }
+      },
+      { threshold: 0.3 }
+    );
+
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, [startOnView, hasStarted]);
+
+  useEffect(() => {
+    if (!hasStarted) return;
+
+    let startTime: number;
+    let animationFrame: number;
+
+    const animate = (timestamp: number) => {
+      if (!startTime) startTime = timestamp;
+      const progress = Math.min((timestamp - startTime) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3); // easeOutCubic
+      setCount(Math.floor(eased * end));
+
+      if (progress < 1) {
+        animationFrame = requestAnimationFrame(animate);
+      }
+    };
+
+    animationFrame = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(animationFrame);
+  }, [hasStarted, end, duration]);
+
+  return { count, ref };
+}
+
+// ─── Main App ────────────────────────────────────────────────────
+export default function App() {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [activeFaq, setActiveFaq] = useState<number | null>(null);
+  const [showQR, setShowQR] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [activeNav, setActiveNav] = useState('beranda');
+  const [activeProblemSlide, setActiveProblemSlide] = useState(0);
+  const [webDemoTab, setWebDemoTab] = useState<'dashboard' | 'lapangan' | 'analitik'>('dashboard');
+
+  // ─── Simulator State Hooks ─────────────────────────────────────
+  const [demoRole, setDemoRole] = useState<'customer' | 'mitra'>('customer');
+  const [customerScreen, setCustomerScreen] = useState(0); // 0: Splash, 1: Home, 2: Detail, 3: Payment, 4: Success
+  const [mitraScreen, setMitraScreen] = useState(0); // 0: Dashboard, 1: Manage, 2: Verification, 3: QR Scanner
+  const [isAutoplay, setIsAutoplay] = useState(true);
+  const [lastInteraction, setLastInteraction] = useState(Date.now());
+
+  useEffect(() => {
+    if (!isAutoplay) return;
+    const timer = setInterval(() => {
+      if (demoRole === 'customer') {
+        setCustomerScreen((prev) => (prev + 1) % 5);
+      } else {
+        setMitraScreen((prev) => (prev + 1) % 4);
+      }
+    }, 4500);
+    return () => clearInterval(timer);
+  }, [demoRole, isAutoplay]);
+
+  useEffect(() => {
+    if (isAutoplay) return;
+    const timer = setTimeout(() => {
+      setIsAutoplay(true);
+    }, 8000);
+    return () => clearTimeout(timer);
+  }, [isAutoplay, lastInteraction]);
+
+  const selectCustomerScreen = (screen: number) => {
+    setIsAutoplay(false);
+    setLastInteraction(Date.now());
+    setCustomerScreen(screen);
+  };
+
+  const selectMitraScreen = (screen: number) => {
+    setIsAutoplay(false);
+    setLastInteraction(Date.now());
+    setMitraScreen(screen);
+  };
+
+  const changeDemoRole = (role: 'customer' | 'mitra') => {
+    setIsAutoplay(true);
+    setDemoRole(role);
+    if (role === 'customer') setCustomerScreen(0);
+    else setMitraScreen(0);
+  };
+
+  const handleDragEnd = (e: MouseEvent | TouchEvent | PointerEvent, { offset, velocity }: { offset: { x: number, y: number }, velocity: { x: number, y: number } }) => {
+    const swipePower = Math.abs(offset.x) * velocity.x;
+    const swipeConfidenceThreshold = 10000;
+    
+    if (swipePower < -swipeConfidenceThreshold || offset.x < -40) {
+      // Swipe left -> Next screen
+      setIsAutoplay(false);
+      setLastInteraction(Date.now());
+      if (demoRole === 'customer') setCustomerScreen(c => (c + 1) % 5);
+      else setMitraScreen(m => (m + 1) % 4);
+    } else if (swipePower > swipeConfidenceThreshold || offset.x > 40) {
+      // Swipe right -> Prev screen
+      setIsAutoplay(false);
+      setLastInteraction(Date.now());
+      if (demoRole === 'customer') setCustomerScreen(c => (c - 1 + 5) % 5);
+      else setMitraScreen(m => (m - 1 + 4) % 4);
+    }
+  };
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveProblemSlide((prev) => (prev === 0 ? 1 : 0));
+    }, 4000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const { scrollY } = useScroll();
+  
+  useMotionValueEvent(scrollY, "change", (latest) => {
+    setIsScrolled(latest > 50);
+  });
+
+  const typedWord = useTypewriter(['Futsal', 'Badminton', 'Basket', 'Tennis'], 120, 80, 1800);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // ─── Scroll spy for nav ────
+  useEffect(() => {
+    const sections = ['beranda', 'tentang', 'fitur', 'demo', 'tim', 'faq'];
+    const handleScroll = () => {
+      for (const id of sections) {
+        const el = document.getElementById(id);
+        if (el) {
+          const rect = el.getBoundingClientRect();
+          if (rect.top <= 150 && rect.bottom >= 150) {
+            setActiveNav(id);
+            break;
+          }
+        }
+      }
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
+
+  const toggleFaq = (index: number) => {
+    setActiveFaq(activeFaq === index ? null : index);
+  };
+
+  const faqs = [
+    { q: "Bagaimana cara melakukan pembayaran di Lapangku?", a: "Setelah memilih jadwal dan mengonfirmasi booking, Anda akan diarahkan ke halaman pembayaran. Lakukan transfer ke rekening yang tertera, lalu upload bukti pembayaran melalui aplikasi. Tim pengelola lapangan (Mitra) akan memverifikasi bukti pembayaran Anda, dan status booking akan berubah menjadi 'Dikonfirmasi' setelah disetujui." },
+    { q: "Bagaimana cara membatalkan jadwal lapangan yang sudah dipesan?", a: "Pembatalan dapat dilakukan langsung dari aplikasi. Buka menu 'Pesanan Saya', pilih tiket booking yang aktif, lalu tekan tombol 'Batalkan Pesanan'. Sistem akan otomatis memperbarui status pesanan Anda dan mengembalikan slot jadwal tersebut agar bisa dipesan oleh pengguna lain." },
+    { q: "Bagaimana prosedur pengembalian dana (refund) jika saya batal main?", a: "Karena pembayaran dilakukan secara manual via transfer bank, proses refund akan dikoordinasikan langsung antara Anda dan pihak pengelola lapangan (Mitra). Anda bisa menghubungi pengelola melalui fitur 'Hubungi CS' di aplikasi untuk mengatur pengembalian dana." },
+    { q: "Apakah jadwal lapangan yang tampil di aplikasi selalu akurat dan real-time?", a: "Ya! Salah satu keunggulan utama Lapangku adalah sinkronisasi jadwal secara real-time melalui Firebase Cloud Firestore. Begitu ada pengguna yang menyelesaikan booking, slot waktu tersebut akan otomatis terkunci untuk mencegah terjadinya double booking atau jadwal bentrok." },
+    { q: "Apa perbedaan akun Customer, Mitra, dan Admin di Lapangku?", a: "Lapangku memiliki tiga peran pengguna: Customer dapat mencari dan memesan lapangan; Mitra adalah pengelola lapangan yang bisa mengelola jadwal, memverifikasi pembayaran, serta melihat laporan pendapatan; Admin bertugas mengawasi seluruh sistem termasuk verifikasi akun Mitra dan monitoring aktivitas platform." }
+  ];
+
+  const handleScrollTo = (e: React.MouseEvent<HTMLAnchorElement>, targetId: string) => {
+    e.preventDefault();
+    const target = document.getElementById(targetId);
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    setIsMobileMenuOpen(false);
+  };
+
+  // ─── Counter stats ────
+  const stat1 = useCounter(150, 2000);
+  const stat2 = useCounter(50, 2000);
+  const stat3 = useCounter(24, 2000);
+  const stat4 = useCounter(99, 2000);
+
+  const navItems = [
+    { id: 'beranda', label: 'Beranda' },
+    { id: 'tentang', label: 'Tentang' },
+    { id: 'fitur', label: 'Fitur' },
+    { id: 'demo', label: 'Demo' },
+    { id: 'tim', label: 'Tim' },
+    { id: 'faq', label: 'FAQ' },
+  ];
+
+  return (
+    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans overflow-x-hidden relative">
+      
+      {/* ═══ Rich Animated Background ═══ */}
+      <div className="fixed inset-0 pointer-events-none -z-10 overflow-hidden">
+        {/* Animated Mesh Gradient Blobs */}
+        <div className="mesh-blob-1 absolute top-[-20%] right-[-10%] w-[700px] h-[700px] bg-emerald-300/25 rounded-full blur-[130px]"></div>
+        <div className="mesh-blob-2 absolute top-[15%] left-[-18%] w-[800px] h-[800px] bg-sky-200/30 rounded-full blur-[150px]"></div>
+        <div className="mesh-blob-3 absolute bottom-[5%] right-[5%] w-[500px] h-[500px] bg-violet-200/20 rounded-full blur-[120px]"></div>
+        <div className="mesh-blob-4 absolute top-[60%] left-[20%] w-[400px] h-[400px] bg-teal-200/15 rounded-full blur-[100px]"></div>
+        
+        {/* Subtle Grid Pattern */}
+        <div className="absolute inset-0 grid-bg opacity-100"></div>
+        
+        {/* Hero Section Radial Gradient */}
+        <div className="absolute inset-0 hero-gradient"></div>
+
+        {/* Top Edge Glow */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[2px] bg-gradient-to-r from-transparent via-emerald-400/20 to-transparent"></div>
+      </div>
+
+      {/* ═══ Navbar ═══ */}
+      <motion.div 
+        className="fixed top-0 inset-x-0 z-50 px-4 sm:px-6 lg:px-8"
+        animate={{ paddingTop: isScrolled ? '8px' : '16px' }}
+        transition={{ duration: 0.3 }}
+      >
+        <header className={`max-w-7xl mx-auto backdrop-blur-xl rounded-full px-5 py-3 md:py-3.5 flex justify-between items-center transition-all duration-500 ${
+          isScrolled 
+            ? 'bg-white/85 shadow-lg shadow-slate-900/[0.04] border border-slate-200/60' 
+            : 'bg-white/60 shadow-sm border border-white/50'
+        }`}>
+          <div className="flex items-center gap-2.5 lg:gap-3">
+            <div className="bg-gradient-to-br from-emerald-500 to-teal-600 p-2 rounded-xl text-white shadow-md shadow-emerald-500/25 flex-shrink-0">
+              <Smartphone className="w-5 h-5 lg:w-5 lg:h-5" />
+            </div>
+            <span className="font-extrabold text-xl lg:text-[22px] tracking-tight text-slate-900">Lapangku<span className="text-emerald-500">.</span></span>
+          </div>
+          
+          {/* Desktop Navigation */}
+          <nav className="hidden lg:flex items-center bg-slate-100/60 rounded-full p-1">
+            {navItems.map((item) => (
+              <a 
+                key={item.id}
+                href={`#${item.id}`} 
+                onClick={(e) => handleScrollTo(e, item.id)} 
+                className={`relative text-sm font-semibold px-5 py-2 rounded-full transition-all duration-300 ${
+                  activeNav === item.id
+                    ? 'text-emerald-700 bg-white shadow-sm'
+                    : 'text-slate-500 hover:text-slate-800'
+                }`}
+              >
+                {item.label}
+              </a>
+            ))}
+          </nav>
+
+          <div className="hidden lg:flex items-center gap-3">
+            <a href="https://github.com/Maulanahb/Lapangku" target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-slate-500 hover:text-slate-800 transition-colors flex items-center gap-2 px-4 py-2 rounded-full hover:bg-slate-100/70">
+               <Github className="w-4 h-4" />
+               <span>Repositori</span>
+            </a>
+            <a href="#beranda" onClick={(e) => handleScrollTo(e, 'beranda')} className="text-sm font-bold text-white bg-gradient-to-r from-emerald-500 to-teal-500 px-5 py-2.5 rounded-full shadow-md shadow-emerald-500/25 hover:shadow-lg hover:shadow-emerald-500/30 transition-all hover:scale-[1.02] active:scale-[0.98]">
+              Download
+            </a>
+          </div>
+
+          {/* Mobile Menu Button */}
+          <button 
+            onClick={toggleMobileMenu}
+            className="lg:hidden p-2 rounded-full bg-white/80 border border-slate-200/70 text-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 hover:bg-slate-50 transition-all active:scale-95"
+          >
+            {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
+        </header>
+
+        {/* Mobile Dropdown */}
+        <AnimatePresence>
+          {isMobileMenuOpen && (
+            <motion.div 
+              initial={{ opacity: 0, y: -10, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -10, scale: 0.95 }}
+              transition={{ duration: 0.2, ease: 'easeOut' }}
+              className="absolute top-[72px] left-4 right-4 bg-white/95 backdrop-blur-xl border border-slate-200/60 rounded-3xl p-3 shadow-2xl shadow-slate-900/10 z-50 lg:hidden flex flex-col gap-0.5"
+            >
+              {navItems.map((item) => (
+                <a 
+                  key={item.id}
+                  href={`#${item.id}`} 
+                  onClick={(e) => handleScrollTo(e, item.id)} 
+                  className={`block px-5 py-3.5 rounded-2xl text-[15px] font-semibold transition-colors ${
+                    activeNav === item.id 
+                      ? 'text-emerald-700 bg-emerald-50'
+                      : 'text-slate-600 hover:bg-slate-50'
+                  }`}
+                >
+                  {item.label}
+                </a>
+              ))}
+              <div className="border-t border-slate-100 my-1"></div>
+              <a href="https://github.com/Maulanahb/Lapangku" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2.5 px-5 py-3.5 rounded-2xl text-[15px] font-semibold text-slate-600 hover:bg-slate-50">
+                 <Github className="w-5 h-5"/>
+                 Repositori GitHub
+              </a>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
+
+      {/* ═══ Main Content ═══ */}
+      <main className="max-w-7xl mx-auto w-full pt-32 lg:pt-40 pb-16 px-4 sm:px-6 lg:px-8">
+        
+        {/* ═══ Hero Section ═══ */}
+        <div id="beranda" className="flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-8 mb-28">
+           {/* Text Content */}
+           <div className="flex-1 max-w-2xl text-center lg:text-left z-10 pt-4">
+              <motion.div
+                 initial={{ opacity: 0, scale: 0.9 }}
+                 animate={{ opacity: 1, scale: 1 }}
+                 transition={{ duration: 0.5 }}
+                 className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-50/80 border border-emerald-200/60 text-emerald-700 text-xs sm:text-sm font-semibold mb-6 sm:mb-8 backdrop-blur-sm"
+              >
+                 <span className="relative flex h-2 w-2">
+                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                   <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                 </span>
+                 Aplikasi Booking Lapangan #1
+              </motion.div>
+              
+              <motion.h1 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.1 }}
+                className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-extrabold leading-[1.08] tracking-tight text-slate-900 mb-6"
+              >
+                Booking Lapangan{' '}
+                <br className="hidden md:block"/>
+                <span className="gradient-text">{typedWord}</span>
+                <span className="typewriter-cursor text-emerald-500 font-light">|</span>
+                <br className="hidden md:block"/>
+                <span className="text-slate-400 text-3xl sm:text-4xl lg:text-5xl xl:text-6xl">Tanpa Ribet.</span>
+              </motion.h1>
+              
+              <motion.p
+                 initial={{ opacity: 0, y: 20 }}
+                 animate={{ opacity: 1, y: 0 }}
+                 transition={{ duration: 0.6, delay: 0.2 }}
+                 className="text-slate-500 text-base sm:text-lg lg:text-xl md:max-w-xl mx-auto lg:mx-0 mb-8 sm:mb-10 leading-relaxed"
+              >
+                 Platform berbasis mobile untuk mencari, memesan, dan mengelola jadwal lapangan olahraga secara digital. Dukung gaya hidup aktifmu bersama Lapangku.
+              </motion.p>
+              
+              <motion.div 
+                 initial={{ opacity: 0, y: 20 }}
+                 animate={{ opacity: 1, y: 0 }}
+                 transition={{ duration: 0.6, delay: 0.3 }}
+                 className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 sm:gap-4"
+              >
+                 <div className="relative w-full sm:w-auto">
+                   <button 
+                     onMouseEnter={() => setShowQR(true)}
+                     onMouseLeave={() => setShowQR(false)}
+                     className="w-full flex items-center justify-center gap-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-bold px-8 py-4 rounded-full shadow-xl shadow-emerald-500/25 hover:shadow-emerald-500/40 transition-all duration-300 hover:scale-[1.03] active:scale-[0.97]"
+                   >
+                      <Download className="w-5 h-5" />
+                      Download Aplikasi
+                   </button>
+                   <AnimatePresence>
+                     {showQR && (
+                       <motion.div 
+                         initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                         animate={{ opacity: 1, y: 0, scale: 1 }}
+                         exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                         className="absolute top-full left-1/2 -translate-x-1/2 mt-4 bg-white p-5 rounded-2xl shadow-2xl shadow-slate-900/10 border border-slate-100 z-50 flex flex-col items-center gap-3 w-52 pointer-events-none"
+                       >
+                         <div className="w-36 h-36 bg-gradient-to-br from-slate-50 to-emerald-50 rounded-xl flex items-center justify-center border-2 border-dashed border-emerald-200 text-emerald-400">
+                           <QrCode className="w-14 h-14" />
+                         </div>
+                         <span className="text-[11px] font-bold text-slate-500 text-center uppercase tracking-wider">Scan Untuk Mengunduh</span>
+                       </motion.div>
+                     )}
+                   </AnimatePresence>
+                 </div>
+                 <a href="https://github.com/Maulanahb/Lapangku" target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto flex items-center justify-center gap-2.5 bg-white hover:bg-slate-50 text-slate-700 font-bold px-8 py-4 rounded-full shadow-sm border border-slate-200/80 hover:border-slate-300 hover:shadow-md transition-all duration-300 hover:scale-[1.03] active:scale-[0.97]">
+                    <Github className="w-5 h-5" />
+                    Lihat GitHub
+                 </a>
+              </motion.div>
+           </div>
+
+            {/* ═══ Phone Mockup ═══ */}
+            <div className="flex-1 w-full max-w-[320px] lg:max-w-[400px] mx-auto lg:ml-auto relative flex flex-col items-center gap-6 z-10" style={{ perspective: "1000px" }}>
+
+              
+              {/* Role Toggle Selector */}
+              <div className="flex bg-white/80 backdrop-blur-md p-1 rounded-full border border-slate-200 shadow-md z-30 pointer-events-auto">
+                <button 
+                  onClick={() => changeDemoRole('customer')}
+                  className={`flex items-center gap-1.5 px-4.5 py-2 rounded-full text-xs font-bold transition-all duration-300 ${
+                    demoRole === 'customer' 
+                      ? 'bg-[#1B6B3A] text-white shadow-sm shadow-[#1B6B3A]/20' 
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  <Users className="w-3.5 h-3.5" />
+                  Customer App
+                </button>
+                <button 
+                  onClick={() => changeDemoRole('mitra')}
+                  className={`flex items-center gap-1.5 px-4.5 py-2 rounded-full text-xs font-bold transition-all duration-300 ${
+                    demoRole === 'mitra' 
+                      ? 'bg-[#1B6B3A] text-white shadow-sm shadow-[#1B6B3A]/20' 
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  <Store className="w-3.5 h-3.5" />
+                  Mitra App
+                </button>
+              </div>
+
+              {/* Background glow */}
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[110%] pt-[110%] bg-gradient-to-tr from-[#1B6B3A]/20 via-emerald-100/10 to-sky-100/20 rounded-full blur-3xl -z-10"></div>
+              
+              <motion.div
+                 animate={{ 
+                   y: [0, -15, 0],
+                   rotateX: 12,
+                   rotateY: -16,
+                   rotateZ: 6
+                 }}
+                 whileHover={{ 
+                   rotateX: 0, 
+                   rotateY: 0, 
+                   rotateZ: 0,
+                   scale: 1.03
+                 }}
+                 transition={{ 
+                   y: { repeat: Infinity, duration: 6, ease: "easeInOut" },
+                   default: { duration: 0.5, ease: "easeOut" }
+                 }}
+                 style={{ transformStyle: "preserve-3d" }}
+                 className="relative w-[260px] lg:w-[290px] z-10 pointer-events-auto"
+              >
+                 {/* Phone frame */}
+                 <div className="bg-gradient-to-br from-slate-700 via-slate-800 to-slate-900 rounded-[44px] lg:rounded-[48px] p-[10px] shadow-2xl shadow-slate-900/50 border border-slate-700/50 relative">
+                  
+                  {/* Phone Buttons */}
+                  <div className="absolute top-[100px] -left-[2px] w-[3px] h-[30px] bg-slate-700/80 rounded-l-md shadow-[inset_1px_0_1px_rgba(255,255,255,0.2)]"></div>
+                  <div className="absolute top-[150px] -left-[2px] w-[3px] h-[50px] bg-slate-700/80 rounded-l-md shadow-[inset_1px_0_1px_rgba(255,255,255,0.2)]"></div>
+                  <div className="absolute top-[210px] -left-[2px] w-[3px] h-[50px] bg-slate-700/80 rounded-l-md shadow-[inset_1px_0_1px_rgba(255,255,255,0.2)]"></div>
+                  <div className="absolute top-[130px] -right-[2px] w-[3px] h-[70px] bg-slate-700/80 rounded-r-md shadow-[inset_-1px_0_1px_rgba(255,255,255,0.2)]"></div>
+
+                  {/* Internal Screen Container */}
+                  <div className="w-full h-[530px] lg:h-[580px] bg-[#F4F6F9] rounded-[34px] lg:rounded-[38px] overflow-hidden relative select-none shadow-[inset_0_0_8px_rgba(0,0,0,0.1)] ring-1 ring-slate-950/20">
+                      
+                      {/* Glass screen reflection overlay */}
+                      <div className="absolute inset-0 z-50 pointer-events-none rounded-[34px] lg:rounded-[38px] bg-gradient-to-tr from-transparent via-white/5 to-white/20 opacity-50"></div>
+                      <div className="absolute -top-[50%] -right-[50%] w-[100%] h-[200%] bg-white/5 rotate-45 transform pointer-events-none z-50"></div>
+
+                      {/* Dynamic Island */}
+                      <div className="absolute top-3 inset-x-0 h-[24px] bg-black rounded-full w-[85px] mx-auto z-40 flex items-center justify-end px-2 shadow-sm shadow-black/50 border border-slate-700/50">
+                        <div className="w-2.5 h-2.5 rounded-full bg-slate-800/80 mr-3 border border-slate-700/50"></div>
+                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/80 shadow-[0_0_6px_rgba(16,185,129,0.8)]"></div>
+                      </div>
+                      
+                      {/* Screens Container with transition */}
+                      <motion.div 
+                        className="w-full h-full text-slate-800 relative font-sans text-xs"
+                        drag="x"
+                        dragConstraints={{ left: 0, right: 0 }}
+                        dragElastic={0.2}
+                        dragDirectionLock
+                        onDragEnd={handleDragEnd}
+                      >
+                        <AnimatePresence mode="wait">
+                          {demoRole === 'customer' ? (
+                            // ─── Customer Screens ───
+                            customerScreen === 0 ? (
+                              <motion.div
+                                key="c-splash"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ duration: 0.3 }}
+                                className="absolute inset-0 bg-gradient-to-br from-[#1B6B3A] to-[#114B27] flex flex-col items-center justify-center text-white p-6 cursor-pointer"
+                                onClick={() => selectCustomerScreen(1)}
+                              >
+                                <div className="bg-white/10 p-4 rounded-3xl backdrop-blur-md border border-white/20 mb-4 animate-pulse">
+                                  <Smartphone className="w-10 h-10 text-white" />
+                                </div>
+                                <h2 className="text-xl font-extrabold tracking-tight mb-1">Lapangku<span className="text-[#34D399]">.</span></h2>
+                                <p className="text-[10px] text-emerald-100/70 text-center max-w-[150px]">Pesan lapangan olahraga tanpa ribet</p>
+                                <div className="absolute bottom-10 flex items-center gap-2">
+                                  <RefreshCw className="w-3.5 h-3.5 text-emerald-400 animate-spin" />
+                                  <span className="text-[10px] font-semibold text-emerald-200/80">Memuat data...</span>
+                                </div>
+                              </motion.div>
+                            ) : customerScreen === 1 ? (
+                              <motion.div
+                                key="c-home"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ duration: 0.3 }}
+                                className="absolute inset-0 bg-[#F4F6F9] flex flex-col pb-14 overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+                              >
+                                {/* Header */}
+                                <div className="bg-white px-4 pt-10 pb-3 shadow-sm border-b border-slate-100 flex-shrink-0">
+                                  <div className="flex items-center justify-between mb-3">
+                                    <div>
+                                      <div className="text-[10px] text-slate-400 font-semibold leading-none mb-1">Halo,</div>
+                                      <div className="text-[13px] font-bold text-slate-800 leading-none">Budi Santoso 👋</div>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <div className="relative w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-slate-200 transition-colors">
+                                        <Bell className="w-4 h-4" />
+                                        <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-rose-500 rounded-full"></span>
+                                      </div>
+                                      <div className="w-8 h-8 rounded-full bg-[#1B6B3A] text-white flex items-center justify-center font-bold text-xs shadow-sm">
+                                        B
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-1.5 text-slate-500 text-[10px] font-medium mb-3">
+                                    <MapPin className="w-3.5 h-3.5 text-[#1B6B3A]" />
+                                    <span>Malang, Jawa Timur</span>
+                                  </div>
+                                  <div className="w-full bg-[#F3F5F7] rounded-full h-8 flex items-center px-3 gap-2 border border-transparent hover:border-slate-200 transition-all">
+                                    <Search className="w-3.5 h-3.5 text-slate-400" />
+                                    <span className="text-[10.5px] text-slate-400 font-medium">Cari lapangan, olahraga...</span>
+                                  </div>
+                                </div>
+
+                                {/* Content */}
+                                <div className="p-3 flex-1">
+                                  {/* Kategori */}
+                                  <div className="mb-4">
+                                    <h3 className="font-extrabold text-slate-800 text-[11px] mb-2 px-1">Kategori</h3>
+                                    <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                                      {['Semua', 'Futsal', 'Bulu Tangkis', 'Basket'].map((cat, i) => (
+                                        <button 
+                                          key={cat} 
+                                          className={`px-3 py-1 rounded-full text-[9px] font-bold transition-all flex-shrink-0 ${
+                                            i === 0 
+                                              ? 'bg-[#1B6B3A] text-white shadow-sm shadow-[#1B6B3A]/20' 
+                                              : 'bg-white text-slate-500 border border-slate-200 hover:bg-slate-50'
+                                          }`}
+                                        >
+                                          {cat}
+                                        </button>
+                                      ))}
+                                    </div>
+                                  </div>
+
+                                  {/* Rekomendasi */}
+                                  <div className="mb-2 px-1 flex items-center justify-between">
+                                    <h3 className="font-extrabold text-slate-800 text-[11px]">Rekomendasi Lapangan</h3>
+                                    <span className="text-[9px] font-bold text-[#1B6B3A]">Lihat Semua</span>
+                                  </div>
+
+                                  {/* Grid of Fields */}
+                                  <div className="grid grid-cols-2 gap-2.5">
+                                    {/* Card 1 */}
+                                    <div 
+                                      onClick={() => selectCustomerScreen(2)}
+                                      className="bg-white rounded-xl overflow-hidden shadow-sm border border-slate-100 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex flex-col cursor-pointer"
+                                    >
+                                      <div className="h-20 bg-emerald-800 relative flex items-center justify-center text-white/90">
+                                        <div className="absolute inset-0 bg-cover bg-center opacity-85" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1575361204480-aadea25e6e68?auto=format&fit=crop&q=80&w=200')" }}></div>
+                                        <div className="absolute top-1.5 left-1.5 flex flex-col gap-0.5">
+                                          <span className="bg-[#1B6B3A] text-white text-[7px] font-extrabold px-1 py-0.5 rounded">FUTSAL</span>
+                                          <span className="bg-black/60 text-white text-[7px] font-extrabold px-1 py-0.5 rounded">INDOOR</span>
+                                        </div>
+                                      </div>
+                                      <div className="p-2 flex-1 flex flex-col">
+                                        <span className="text-[7.5px] font-extrabold text-slate-400 tracking-wider">GOR PAHLAWAN</span>
+                                        <h4 className="text-[10px] font-bold text-slate-800 truncate mb-1">Lapangan Futsal A</h4>
+                                        <div className="mt-auto">
+                                          <div className="text-[10.5px] font-extrabold text-[#1B6B3A]">Rp 150K<span className="text-[7.5px] font-normal text-slate-400">/jam</span></div>
+                                          <div className="flex items-center justify-between mt-1 text-[8.5px] text-slate-500 border-t border-slate-50 pt-1">
+                                            <span className="flex items-center gap-0.5"><MapPin className="w-2.5 h-2.5 text-[#1B6B3A]" /> 1.2 km</span>
+                                            <span className="flex items-center gap-0.5 text-amber-500 font-bold"><Star className="w-2.5 h-2.5 fill-amber-400 text-amber-400" /> 4.8</span>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+
+                                    {/* Card 2 */}
+                                    <div 
+                                      onClick={() => selectCustomerScreen(2)}
+                                      className="bg-white rounded-xl overflow-hidden shadow-sm border border-slate-100 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex flex-col cursor-pointer"
+                                    >
+                                      <div className="h-20 bg-[#1B6B3A] relative flex items-center justify-center text-white/90">
+                                        <div className="absolute inset-0 bg-cover bg-center opacity-85" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?auto=format&fit=crop&q=80&w=200')" }}></div>
+                                        <div className="absolute top-1.5 left-1.5 flex flex-col gap-0.5">
+                                          <span className="bg-[#1B6B3A] text-white text-[7px] font-extrabold px-1 py-0.5 rounded">BADMINTON</span>
+                                          <span className="bg-black/60 text-white text-[7px] font-extrabold px-1 py-0.5 rounded">INDOOR</span>
+                                        </div>
+                                      </div>
+                                      <div className="p-2 flex-1 flex flex-col">
+                                        <span className="text-[7.5px] font-extrabold text-slate-400 tracking-wider">SPORT CENTER</span>
+                                        <h4 className="text-[10px] font-bold text-slate-800 truncate mb-1">Badminton Court 1</h4>
+                                        <div className="mt-auto">
+                                          <div className="text-[10.5px] font-extrabold text-[#1B6B3A]">Rp 80K<span className="text-[7.5px] font-normal text-slate-400">/jam</span></div>
+                                          <div className="flex items-center justify-between mt-1 text-[8.5px] text-slate-500 border-t border-slate-50 pt-1">
+                                            <span className="flex items-center gap-0.5"><MapPin className="w-2.5 h-2.5 text-[#1B6B3A]" /> 2.4 km</span>
+                                            <span className="flex items-center gap-0.5 text-amber-500 font-bold"><Star className="w-2.5 h-2.5 fill-amber-400 text-amber-400" /> 4.5</span>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Bottom Nav */}
+                                <div className="absolute bottom-0 inset-x-0 bg-white border-t border-slate-100 py-1.5 flex justify-around items-center z-20 shadow-[0_-4px_10px_rgba(0,0,0,0.02)]">
+                                  <div className="flex flex-col items-center cursor-pointer text-[#1B6B3A]">
+                                    <Smartphone className="w-4 h-4" />
+                                    <span className="text-[8px] font-extrabold mt-0.5">Beranda</span>
+                                  </div>
+                                  <div className="flex flex-col items-center cursor-pointer text-slate-300 hover:text-slate-500" onClick={() => selectCustomerScreen(3)}>
+                                    <CalendarClock className="w-4 h-4" />
+                                    <span className="text-[8px] font-bold mt-0.5">Pesanan</span>
+                                  </div>
+                                  <div className="flex flex-col items-center cursor-pointer text-slate-300 hover:text-slate-500">
+                                    <Heart className="w-4 h-4" />
+                                    <span className="text-[8px] font-bold mt-0.5">Favorit</span>
+                                  </div>
+                                  <div className="flex flex-col items-center cursor-pointer text-slate-300 hover:text-slate-500">
+                                    <UserCircle className="w-4 h-4" />
+                                    <span className="text-[8px] font-bold mt-0.5">Profil</span>
+                                  </div>
+                                </div>
+                              </motion.div>
+                            ) : customerScreen === 2 ? (
+                              <motion.div
+                                key="c-detail"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ duration: 0.3 }}
+                                className="absolute inset-0 bg-white flex flex-col"
+                              >
+                                {/* Hero Image */}
+                                <div className="h-32 bg-slate-700 relative flex-shrink-0">
+                                  <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1575361204480-aadea25e6e68?auto=format&fit=crop&q=80&w=300')" }}></div>
+                                  <div className="absolute inset-0 bg-gradient-to-t from-black/55 to-transparent"></div>
+                                  <button 
+                                    onClick={() => selectCustomerScreen(1)}
+                                    className="absolute top-9 left-3 w-7 h-7 bg-white rounded-full flex items-center justify-center shadow-md hover:bg-slate-50 text-slate-700"
+                                  >
+                                    <ArrowLeft className="w-4 h-4" />
+                                  </button>
+                                  <button className="absolute top-9 right-3 w-7 h-7 bg-white rounded-full flex items-center justify-center shadow-md hover:bg-slate-50 text-slate-700">
+                                    <Heart className="w-4 h-4 text-rose-500 fill-rose-500" />
+                                  </button>
+                                  <div className="absolute bottom-2.5 left-4 flex gap-1">
+                                    <span className="bg-[#E8F5EC] text-[#1B6B3A] text-[8px] font-extrabold px-1.5 py-0.5 rounded-full">FUTSAL</span>
+                                    <span className="bg-[#E8F5EC] text-[#1B6B3A] text-[8px] font-extrabold px-1.5 py-0.5 rounded-full">INDOOR</span>
+                                  </div>
+                                </div>
+
+                                {/* Body Info */}
+                                <div className="p-3.5 flex-1 overflow-y-auto pb-16 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                                  <span className="text-[8px] font-extrabold text-slate-400 tracking-wider">GOR PAHLAWAN</span>
+                                  <h3 className="text-[14px] font-extrabold text-slate-800 leading-tight mb-1">Lapangan Futsal A</h3>
+                                  
+                                  <div className="flex items-center gap-1.5 text-slate-500 text-[9px] mb-3">
+                                    <MapPin className="w-3 h-3 text-[#1B6B3A]" />
+                                    <span>Jl. Pahlawan No. 10, Malang</span>
+                                  </div>
+
+                                  <div className="flex items-center justify-between border-y border-slate-100 py-2.5 mb-3">
+                                    <div className="flex items-center gap-1">
+                                      <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                                      <span className="font-bold text-[10.5px]">4.8</span>
+                                      <span className="text-slate-400 text-[8.5px]">(120 Ulasan)</span>
+                                    </div>
+                                    <div className="bg-[#E8F5EC] text-[#1B6B3A] text-[8.5px] font-bold px-2 py-0.5 rounded-lg flex items-center gap-1">
+                                      <span className="w-1.5 h-1.5 rounded-full bg-[#1B6B3A] animate-pulse"></span>
+                                      Buka • 08:00 - 22:00
+                                    </div>
+                                  </div>
+
+                                  {/* Tab items */}
+                                  <div className="flex border-b border-slate-100 mb-2.5">
+                                    {['Info', 'Fasilitas', 'Ulasan'].map((tab, i) => (
+                                      <span 
+                                        key={tab} 
+                                        className={`pb-1 px-3 text-[10px] font-extrabold border-b-2 cursor-pointer ${
+                                          i === 0 
+                                            ? 'text-[#1B6B3A] border-[#1B6B3A]' 
+                                            : 'text-slate-400 border-transparent'
+                                        }`}
+                                      >
+                                        {tab}
+                                      </span>
+                                    ))}
+                                  </div>
+
+                                  <p className="text-[9.5px] text-slate-500 leading-relaxed mb-3">
+                                    Lapangan futsal vinyl standar nasional yang empuk dan nyaman. Dilengkapi dengan tribun penonton yang nyaman dan pencahayaan LED.
+                                  </p>
+
+                                  <div className="flex flex-wrap gap-1.5 mb-1.5">
+                                    {['Wi-Fi', 'Kantin', 'Parkir Luas', 'Loker'].map((f) => (
+                                      <span key={f} className="bg-slate-50 text-slate-600 border border-slate-200/60 rounded px-1.5 py-0.5 text-[8.5px] font-semibold">{f}</span>
+                                    ))}
+                                  </div>
+                                </div>
+
+                                {/* Booking Bottom Sheet */}
+                                <div className="absolute bottom-0 inset-x-0 bg-white border-t border-slate-100 px-4 py-2.5 flex justify-between items-center z-20 shadow-[0_-4px_12px_rgba(0,0,0,0.04)]">
+                                  <div>
+                                    <div className="text-[8.5px] text-slate-400 font-bold leading-none mb-1">HARGA SEWA</div>
+                                    <div className="text-[13px] font-extrabold text-[#1B6B3A] leading-none">Rp 150K<span className="text-[9px] font-normal text-slate-400">/jam</span></div>
+                                  </div>
+                                  <button 
+                                    onClick={() => selectCustomerScreen(3)}
+                                    className="bg-[#1B6B3A] hover:bg-[#114B27] text-white font-extrabold text-[10px] px-6 py-2.5 rounded-full shadow-md shadow-[#1B6B3A]/25 transition-all active:scale-95"
+                                  >
+                                    Booking Sekarang
+                                  </button>
+                                </div>
+                              </motion.div>
+                            ) : customerScreen === 3 ? (
+                              <motion.div
+                                key="c-payment"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ duration: 0.3 }}
+                                className="absolute inset-0 bg-[#F4F6F9] flex flex-col pb-16 overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+                              >
+                                {/* Header */}
+                                <div className="bg-white px-3 pt-9 pb-3 shadow-sm border-b border-slate-100 flex items-center gap-2 flex-shrink-0">
+                                  <button 
+                                    onClick={() => selectCustomerScreen(2)}
+                                    className="w-6 h-6 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-600"
+                                  >
+                                    <ArrowLeft className="w-3.5 h-3.5" />
+                                  </button>
+                                  <h3 className="text-[12.5px] font-extrabold text-slate-800">Pembayaran</h3>
+                                </div>
+
+                                {/* Content */}
+                                <div className="p-3 space-y-2.5 flex-1">
+                                  {/* Summary Card */}
+                                  <div className="bg-white rounded-xl p-3 border border-slate-200/50 shadow-sm">
+                                    <h4 className="font-extrabold text-[10.5px] text-slate-700 border-b border-slate-100 pb-1.5 mb-1.5 uppercase tracking-wide">Ringkasan Booking</h4>
+                                    <div className="space-y-1">
+                                      <div className="flex justify-between font-bold text-[10.5px] text-slate-800">
+                                        <span>GOR Pahlawan (Futsal A)</span>
+                                      </div>
+                                      <div className="text-[9.5px] text-slate-500">Jadwal: Hari Ini, 16:00 - 18:00 (2 Jam)</div>
+                                      <div className="flex justify-between font-extrabold text-[11px] text-[#1B6B3A] border-t border-dashed border-slate-100 pt-1.5 mt-1.5">
+                                        <span>Total Tagihan:</span>
+                                        <span>Rp 300.000</span>
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  {/* Bank Transfer Card */}
+                                  <div className="bg-white rounded-xl p-3 border border-slate-200/50 shadow-sm">
+                                    <h4 className="font-extrabold text-[10.5px] text-slate-700 mb-1.5 uppercase tracking-wide">Transfer Bank</h4>
+                                    <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200/80 flex items-center justify-between mb-1.5">
+                                      <div>
+                                        <div className="font-bold text-[10.5px] text-slate-800">Bank Mandiri</div>
+                                        <div className="text-[10px] font-extrabold text-[#1B6B3A] tracking-wider select-text">144-00-123456-7</div>
+                                        <div className="text-[8.5px] text-slate-400 font-semibold">a/n PT Lapangku Jaya Indonesia</div>
+                                      </div>
+                                      <button className="bg-slate-200 text-slate-700 font-bold px-2 py-0.5 rounded text-[8px] active:bg-slate-300">Copy</button>
+                                    </div>
+                                    <p className="text-[8px] text-slate-400 leading-normal italic">Silakan lakukan transfer sesuai jumlah di atas, kemudian unggah bukti transfer.</p>
+                                  </div>
+
+                                  {/* Upload Bukti */}
+                                  <div className="bg-white rounded-xl p-3 border border-slate-200/50 shadow-sm">
+                                    <h4 className="font-extrabold text-[10.5px] text-slate-700 mb-1.5 uppercase tracking-wide">Unggah Bukti Transfer</h4>
+                                    <div className="border-2 border-dashed border-emerald-400/50 bg-emerald-50/20 rounded-xl p-3 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-emerald-50/40 transition-colors">
+                                      <div className="w-8 h-8 rounded-full bg-[#E8F5EC] flex items-center justify-center text-[#1B6B3A] mb-1.5">
+                                        <Check className="w-4 h-4 font-bold" />
+                                      </div>
+                                      <span className="text-[9.5px] font-bold text-slate-700">bukti_transfer.png</span>
+                                      <span className="text-[8.5px] text-[#1B6B3A] font-bold">Sukses Diunggah (2.1 MB)</span>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Payment Action Button */}
+                                <div className="absolute bottom-0 inset-x-0 bg-white border-t border-slate-100 px-4 py-2.5 z-20 shadow-[0_-4px_12px_rgba(0,0,0,0.04)]">
+                                  <button 
+                                    onClick={() => selectCustomerScreen(4)}
+                                    className="w-full bg-[#1B6B3A] hover:bg-[#114B27] text-white font-extrabold text-[11px] py-2.5 rounded-full shadow-md shadow-[#1B6B3A]/25 transition-all active:scale-95 flex items-center justify-center gap-1.5 animate-pulse"
+                                  >
+                                    <Upload className="w-4 h-4" />
+                                    Kirim Bukti Pembayaran
+                                  </button>
+                                </div>
+                              </motion.div>
+                            ) : (
+                              <motion.div
+                                key="c-success"
+                                initial={{ opacity: 0, scale: 0.95 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ duration: 0.3 }}
+                                className="absolute inset-0 bg-[#F4F6F9] flex flex-col justify-center items-center p-5 text-center cursor-pointer"
+                                onClick={() => selectCustomerScreen(1)}
+                              >
+                                <motion.div 
+                                  initial={{ scale: 0.5, opacity: 0 }}
+                                  animate={{ scale: 1, opacity: 1 }}
+                                  transition={{ type: "spring", stiffness: 120, delay: 0.1 }}
+                                  className="w-14 h-14 bg-[#E8F5EC] rounded-full flex items-center justify-center text-[#1B6B3A] mb-4 shadow-md shadow-[#1B6B3A]/10 animate-bounce"
+                                >
+                                  <CheckCircle2 className="w-9 h-9" />
+                                </motion.div>
+                                <h3 className="text-[14.5px] font-extrabold text-slate-800 mb-1 leading-none">Booking Berhasil!</h3>
+                                <p className="text-[9.5px] text-slate-400 font-semibold mb-4 leading-none">Menunggu konfirmasi dari Mitra</p>
+
+                                {/* E-Ticket Card */}
+                                <div className="bg-white rounded-2xl w-full border border-slate-200/50 shadow-md p-3.5 mb-5 relative overflow-hidden text-left">
+                                  <div className="absolute top-0 right-0 w-12 h-12 bg-emerald-500/5 rounded-bl-3xl"></div>
+                                  <div className="border-b border-dashed border-slate-100 pb-2 mb-2 flex justify-between items-center">
+                                    <div>
+                                      <div className="text-[8px] text-slate-400 font-bold uppercase">KODE BOOKING</div>
+                                      <div className="text-[11px] font-extrabold text-[#1B6B3A] tracking-wider select-all">LPG-982834</div>
+                                    </div>
+                                    <span className="bg-[#D1FAE5] text-[#1B6B3A] text-[8.5px] font-extrabold px-2 py-0.5 rounded-full">Dikonfirmasi</span>
+                                  </div>
+                                  <div className="space-y-1.5 text-[9.5px]">
+                                    <div className="flex justify-between">
+                                      <span className="text-slate-400 font-medium">Lapangan:</span>
+                                      <span className="font-bold text-slate-700">GOR Pahlawan (Futsal A)</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span className="text-slate-400 font-medium">Waktu:</span>
+                                      <span className="font-bold text-slate-700">Hari Ini, 16:00 - 18:00</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span className="text-slate-400 font-medium">Customer:</span>
+                                      <span className="font-bold text-slate-700">Budi Santoso</span>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <button 
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    selectCustomerScreen(1);
+                                  }}
+                                  className="bg-[#1B6B3A] hover:bg-[#114B27] text-white font-extrabold text-[10px] px-6 py-2.5 rounded-full shadow-md shadow-[#1B6B3A]/25 transition-all active:scale-95"
+                                >
+                                  Kembali ke Beranda
+                                </button>
+                              </motion.div>
+                            )
+                          ) : (
+                            // ─── Mitra Screens ───
+                            mitraScreen === 0 ? (
+                              <motion.div
+                                key="m-dashboard"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ duration: 0.3 }}
+                                className="absolute inset-0 bg-[#F4F6F9] flex flex-col pb-14 overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+                              >
+                                {/* Header */}
+                                <div className="bg-[#1B6B3A] text-white px-4 pt-10 pb-5 rounded-b-[24px] shadow-lg shadow-[#1B6B3A]/10 flex-shrink-0">
+                                  <div className="flex items-center justify-between mb-3">
+                                    <div>
+                                      <span className="text-[8px] text-emerald-200/80 font-bold uppercase tracking-wider">Mitra Lapangku</span>
+                                      <h3 className="text-[13.5px] font-extrabold leading-none">GOR Pahlawan</h3>
+                                    </div>
+                                    <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white relative">
+                                      <Bell className="w-4 h-4" />
+                                      <span className="absolute top-0.5 right-0.5 w-2 h-2 bg-orange-500 rounded-full"></span>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-1 text-emerald-100/70 text-[9px] font-semibold">
+                                    <MapPin className="w-3 h-3" />
+                                    <span>Malang, Jawa Timur</span>
+                                  </div>
+                                </div>
+
+                                {/* Stats Container */}
+                                <div className="p-3 -mt-3.5 space-y-3 flex-1">
+                                  {/* Stats Row */}
+                                  <div className="bg-white rounded-xl p-3 border border-slate-200/45 shadow-md grid grid-cols-2 gap-2">
+                                    <div>
+                                      <div className="text-[8px] text-slate-400 font-bold uppercase">LAPORAN BULANAN</div>
+                                      <div className="text-[13px] font-extrabold text-[#1B6B3A] mt-0.5">Rp 4.250K</div>
+                                      <div className="flex items-center gap-0.5 text-[8px] text-[#1B6B3A] font-bold mt-1">
+                                        <TrendingUp className="w-2.5 h-2.5" /> +12% minggu ini
+                                      </div>
+                                    </div>
+                                    <div className="border-l border-slate-100 pl-3">
+                                      <div className="text-[8px] text-slate-400 font-bold uppercase">PESANAN AKTIF</div>
+                                      <div className="text-[13px] font-extrabold text-slate-800 mt-0.5">8 Booking</div>
+                                      <div className="text-[8.5px] text-orange-600 font-extrabold mt-1">3 Butuh Verifikasi</div>
+                                    </div>
+                                  </div>
+
+                                  {/* Quick Actions */}
+                                  <div className="mb-2">
+                                    <h4 className="font-extrabold text-[10.5px] text-slate-800 mb-2 px-1">Aksi Cepat</h4>
+                                    <div className="grid grid-cols-3 gap-2 text-center">
+                                      <div 
+                                        onClick={() => selectMitraScreen(3)}
+                                        className="bg-white p-2.5 rounded-xl border border-slate-200/50 hover:bg-slate-50 cursor-pointer shadow-sm"
+                                      >
+                                        <QrCode className="w-5 h-5 mx-auto text-[#1B6B3A] mb-1" />
+                                        <span className="text-[8px] font-bold text-slate-700">Scan QR</span>
+                                      </div>
+                                      <div 
+                                        onClick={() => selectMitraScreen(1)}
+                                        className="bg-white p-2.5 rounded-xl border border-slate-200/50 hover:bg-slate-50 cursor-pointer shadow-sm"
+                                      >
+                                        <Plus className="w-5 h-5 mx-auto text-[#1B6B3A] mb-1" />
+                                        <span className="text-[8px] font-bold text-slate-700">Tambah</span>
+                                      </div>
+                                      <div 
+                                        onClick={() => selectMitraScreen(2)}
+                                        className="bg-white p-2.5 rounded-xl border border-slate-200/50 hover:bg-slate-50 cursor-pointer shadow-sm"
+                                      >
+                                        <Check className="w-5 h-5 mx-auto text-[#1B6B3A] mb-1" />
+                                        <span className="text-[8px] font-bold text-slate-700">Verifikasi</span>
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  {/* Recent Bookings */}
+                                  <div>
+                                    <div className="flex justify-between items-center mb-2 px-1">
+                                      <h4 className="font-extrabold text-[10.5px] text-slate-800">Daftar Booking</h4>
+                                      <span className="text-[8.5px] font-bold text-[#1B6B3A] cursor-pointer" onClick={() => selectMitraScreen(2)}>Lihat Semua</span>
+                                    </div>
+                                    <div className="space-y-2">
+                                      <div 
+                                        onClick={() => selectMitraScreen(2)}
+                                        className="bg-white rounded-xl p-2.5 border border-slate-100 flex items-center justify-between shadow-sm cursor-pointer hover:border-slate-300 transition-all"
+                                      >
+                                        <div>
+                                          <div className="font-bold text-[10px] text-slate-800">Budi Santoso</div>
+                                          <div className="text-[8.5px] text-slate-500">Futsal A • 16:00 - 18:00</div>
+                                        </div>
+                                        <span className="bg-amber-100 text-amber-800 text-[7.5px] font-extrabold px-1.5 py-0.5 rounded">Verifikasi</span>
+                                      </div>
+                                      <div className="bg-white rounded-xl p-2.5 border border-slate-100 flex items-center justify-between shadow-sm">
+                                        <div>
+                                          <div className="font-bold text-[10px] text-slate-800">Andi Saputra</div>
+                                          <div className="text-[8.5px] text-slate-500">Badminton 1 • 19:00 - 20:00</div>
+                                        </div>
+                                        <span className="bg-[#D1FAE5] text-[#1B6B3A] text-[7.5px] font-extrabold px-1.5 py-0.5 rounded">Selesai</span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Bottom Nav (Mitra Style with elevated central Scan Button) */}
+                                <div className="absolute bottom-0 inset-x-0 bg-white border-t border-slate-100 h-14 px-2 flex justify-between items-center z-20 shadow-[0_-4px_10px_rgba(0,0,0,0.02)]">
+                                  <div className="flex flex-col items-center cursor-pointer text-[#1B6B3A] w-12">
+                                    <Store className="w-4 h-4" />
+                                    <span className="text-[7px] font-extrabold mt-0.5">DASHBOARD</span>
+                                  </div>
+                                  <div className="flex flex-col items-center cursor-pointer text-slate-300 hover:text-slate-500 w-12" onClick={() => selectMitraScreen(1)}>
+                                    <Trophy className="w-4 h-4" />
+                                    <span className="text-[7px] font-bold mt-0.5">FIELDS</span>
+                                  </div>
+                                  
+                                  {/* Elevated central scan button */}
+                                  <div className="relative -top-2 flex flex-col items-center z-30" onClick={() => selectMitraScreen(3)}>
+                                    <div className="w-9 h-9 bg-[#1B6B3A] rounded-full flex items-center justify-center text-white shadow-md shadow-[#1B6B3A]/30 hover:scale-105 active:scale-95 transition-all">
+                                      <QrCode className="w-4.5 h-4.5" />
+                                    </div>
+                                    <span className="text-[7.5px] font-extrabold text-[#1B6B3A] mt-1 uppercase">SCAN</span>
+                                  </div>
+
+                                  <div className="flex flex-col items-center cursor-pointer text-slate-300 hover:text-slate-500 w-12" onClick={() => selectMitraScreen(2)}>
+                                    <CalendarClock className="w-4 h-4" />
+                                    <span className="text-[7px] font-bold mt-0.5">ORDERS</span>
+                                  </div>
+                                  <div className="flex flex-col items-center cursor-pointer text-slate-300 hover:text-slate-500 w-12">
+                                    <UserCircle className="w-4 h-4" />
+                                    <span className="text-[7px] font-bold mt-0.5">PROFILE</span>
+                                  </div>
+                                </div>
+                              </motion.div>
+                            ) : mitraScreen === 1 ? (
+                              <motion.div
+                                key="m-fields"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ duration: 0.3 }}
+                                className="absolute inset-0 bg-[#F4F6F9] flex flex-col pb-14"
+                              >
+                                {/* Header */}
+                                <div className="bg-white px-3.5 pt-9 pb-3 shadow-sm border-b border-slate-100 flex items-center justify-between flex-shrink-0">
+                                  <div className="flex items-center gap-2">
+                                    <button 
+                                      onClick={() => selectMitraScreen(0)}
+                                      className="w-6 h-6 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-600"
+                                    >
+                                      <ArrowLeft className="w-3.5 h-3.5" />
+                                    </button>
+                                    <h3 className="text-[12.5px] font-extrabold text-slate-800">Lapangan Saya</h3>
+                                  </div>
+                                  <button className="w-6 h-6 rounded-lg bg-[#E8F5EC] text-[#1B6B3A] flex items-center justify-center hover:bg-emerald-100">
+                                    <Plus className="w-4 h-4" />
+                                  </button>
+                                </div>
+
+                                {/* Content */}
+                                <div className="p-3 space-y-3 flex-1 overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                                  <div className="bg-white rounded-xl overflow-hidden border border-slate-200/50 shadow-sm flex flex-col">
+                                    <div className="h-20 bg-slate-200 bg-cover bg-center" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1575361204480-aadea25e6e68?auto=format&fit=crop&q=80&w=250')" }}></div>
+                                    <div className="p-2.5">
+                                      <div className="flex justify-between items-center">
+                                        <h4 className="font-extrabold text-[11px] text-slate-800">Lapangan Futsal A</h4>
+                                        <span className="bg-[#D1FAE5] text-[#1B6B3A] text-[7.5px] font-extrabold px-1.5 py-0.5 rounded">Aktif</span>
+                                      </div>
+                                      <p className="text-[8.5px] text-slate-400 mt-0.5">Tipe: Vinyl (Indoor) • Harga: Rp 150K / jam</p>
+                                    </div>
+                                  </div>
+
+                                  <div className="bg-white rounded-xl overflow-hidden border border-slate-200/50 shadow-sm flex flex-col">
+                                    <div className="h-20 bg-slate-200 bg-cover bg-center" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?auto=format&fit=crop&q=80&w=250')" }}></div>
+                                    <div className="p-2.5">
+                                      <div className="flex justify-between items-center">
+                                        <h4 className="font-extrabold text-[11px] text-slate-800">Lapangan Badminton 1</h4>
+                                        <span className="bg-[#D1FAE5] text-[#1B6B3A] text-[7.5px] font-extrabold px-1.5 py-0.5 rounded">Aktif</span>
+                                      </div>
+                                      <p className="text-[8.5px] text-slate-400 mt-0.5">Tipe: Kayu (Indoor) • Harga: Rp 80K / jam</p>
+                                    </div>
+                                  </div>
+                                </div>
+                              </motion.div>
+                            ) : mitraScreen === 2 ? (
+                              <motion.div
+                                key="m-verification"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ duration: 0.3 }}
+                                className="absolute inset-0 bg-[#F4F6F9] flex flex-col pb-14 animate-pulse"
+                              >
+                                {/* Header */}
+                                <div className="bg-white px-3.5 pt-9 pb-3 shadow-sm border-b border-slate-100 flex items-center gap-2 flex-shrink-0">
+                                  <button 
+                                    onClick={() => selectMitraScreen(0)}
+                                    className="w-6 h-6 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-600"
+                                  >
+                                    <ArrowLeft className="w-3.5 h-3.5" />
+                                  </button>
+                                  <h3 className="text-[12.5px] font-extrabold text-slate-800">Verifikasi</h3>
+                                </div>
+
+                                {/* Content */}
+                                <div className="p-3 flex-1 flex flex-col justify-center items-center">
+                                  <div className="bg-white rounded-2xl w-full border border-slate-200/50 shadow-md p-3.5 relative overflow-hidden">
+                                    <span className="bg-amber-100 text-amber-800 text-[8px] font-extrabold px-2 py-0.5 rounded-full absolute top-3.5 right-3.5">Butuh Verifikasi</span>
+                                    <h4 className="font-extrabold text-[10px] text-slate-400 uppercase">BUKTI TRANSFER BARU</h4>
+                                    <h3 className="text-[13px] font-extrabold text-slate-800 mb-2 border-b border-slate-100 pb-2 pt-1">Budi Santoso</h3>
+                                    
+                                    <div className="space-y-1.5 text-[9.5px] mb-4">
+                                      <div className="flex justify-between">
+                                        <span className="text-slate-400">Venue:</span>
+                                        <span className="font-bold text-slate-700">GOR Pahlawan (Futsal A)</span>
+                                      </div>
+                                      <div className="flex justify-between">
+                                        <span className="text-slate-400">Jadwal:</span>
+                                        <span className="font-bold text-slate-700">Hari Ini, 16:00 - 18:00</span>
+                                      </div>
+                                      <div className="flex justify-between">
+                                        <span className="text-slate-400">Total Transfer:</span>
+                                        <span className="font-extrabold text-[#1B6B3A]">Rp 300.000</span>
+                                      </div>
+                                    </div>
+
+                                    {/* Receipt preview placeholder */}
+                                    <div className="border border-slate-200 bg-slate-50 rounded-xl p-2.5 flex items-center gap-3 mb-4">
+                                      <div className="w-10 h-10 bg-slate-200 rounded-lg flex items-center justify-center text-slate-400 flex-shrink-0">
+                                        <Image className="w-5 h-5 text-emerald-600" />
+                                      </div>
+                                      <div className="min-w-0 flex-1">
+                                        <div className="font-bold text-[9px] text-slate-800 truncate">bukti_transfer.png</div>
+                                        <div className="text-[8px] text-slate-400">Klik untuk melihat slip</div>
+                                      </div>
+                                    </div>
+
+                                    {/* Action Buttons */}
+                                    <div className="grid grid-cols-2 gap-2.5">
+                                      <button className="border border-rose-500 text-rose-500 font-extrabold py-2 rounded-xl text-[10px] hover:bg-rose-50 transition-colors">Tolak</button>
+                                      <button 
+                                        onClick={() => {
+                                          changeDemoRole('customer');
+                                          selectCustomerScreen(4);
+                                        }}
+                                        className="bg-[#1B6B3A] text-white font-extrabold py-2 rounded-xl text-[10px] hover:bg-[#114B27] shadow-sm shadow-[#1B6B3A]/25 transition-all"
+                                      >
+                                        Setujui
+                                      </button>
+                                    </div>
+                                  </div>
+                                </div>
+                              </motion.div>
+                            ) : (
+                              <motion.div
+                                key="m-qr"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ duration: 0.3 }}
+                                className="absolute inset-0 bg-black flex flex-col justify-between p-4 pb-16 text-white"
+                              >
+                                {/* Header */}
+                                <div className="flex items-center justify-between pt-5">
+                                  <button 
+                                    onClick={() => selectMitraScreen(0)}
+                                    className="w-7 h-7 bg-white/10 rounded-full flex items-center justify-center text-white"
+                                  >
+                                    <ArrowLeft className="w-4 h-4" />
+                                  </button>
+                                  <span className="text-[11px] font-bold">Scan QR Tiket</span>
+                                  <div className="w-7 h-7"></div>
+                                </div>
+
+                                {/* Viewfinder */}
+                                <div className="my-auto flex flex-col items-center">
+                                  <div className="w-36 h-36 border-[3px] border-emerald-400 rounded-3xl relative flex items-center justify-center overflow-hidden">
+                                    <div className="absolute inset-0 bg-emerald-500/15"></div>
+                                    {/* Scanning line animation */}
+                                    <motion.div 
+                                      animate={{ y: [-75, 75, -75] }}
+                                      transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
+                                      className="absolute w-full h-[2px] bg-emerald-400 shadow-md shadow-emerald-400"
+                                    />
+                                    <QrCode className="w-14 h-14 text-white/20" />
+                                  </div>
+                                  <p className="text-[9px] text-center text-slate-300 max-w-[155px] mt-4 leading-normal">Arahkan kamera ke QR Code Tiket Customer Lapangku</p>
+                                </div>
+
+                                <div className="h-6"></div>
+                              </motion.div>
+                            )
+                          )}
+                        </AnimatePresence>
+                      </motion.div>
+                  </div>
+                 </div>
+              </motion.div>
+
+              {/* ═══ Floating Notification Card ═══ */}
+              {!isLoading && (
+                <motion.div 
+                  initial={{ opacity: 0, x: -20, scale: 0.8 }}
+                  animate={{ opacity: 1, x: 0, scale: 1, y: [0, 8, 0] }} 
+                  transition={{ opacity: { duration: 0.5, delay: 0.3 }, x: { duration: 0.5, delay: 0.3 }, scale: { duration: 0.5, delay: 0.3 }, y: { repeat: Infinity, duration: 4, ease: "easeInOut", delay: 1.5 } }} 
+                  className="absolute bottom-16 -left-4 lg:-left-12 bg-white/95 backdrop-blur-xl p-3.5 sm:p-4 rounded-2xl shadow-xl shadow-slate-900/[0.08] border border-slate-100/80 z-30 flex items-center gap-3 sm:gap-4 w-max pointer-events-none"
+                >
+                   <div className="w-10 h-10 sm:w-11 sm:h-11 bg-[#E8F5EC] rounded-xl flex items-center justify-center text-[#1B6B3A]">
+                      <CheckCircle2 className="w-5 h-5 sm:w-5 sm:h-5"/>
+                   </div>
+                   <div className="pr-1 text-left">
+                      <div className="text-[11px] sm:text-[12px] text-slate-400 font-medium mb-0.5">Booking Dikonfirmasi ✓</div>
+                      <div className="text-[13px] sm:text-[14px] font-bold text-slate-800">Lapangan Futsal A</div>
+                   </div>
+                </motion.div>
+              )}
+
+              {/* ═══ Floating Stats Card ═══ */}
+              {!isLoading && (
+                <motion.div 
+                  initial={{ opacity: 0, x: 20, scale: 0.8 }}
+                  animate={{ opacity: 1, x: 0, scale: 1, y: [0, -6, 0] }} 
+                  transition={{ opacity: { duration: 0.5, delay: 0.5 }, x: { duration: 0.5, delay: 0.5 }, scale: { duration: 0.5, delay: 0.5 }, y: { repeat: Infinity, duration: 3.5, ease: "easeInOut", delay: 2 } }} 
+                  className="absolute top-24 -right-4 lg:-right-8 bg-white/95 backdrop-blur-xl p-3.5 rounded-2xl shadow-xl shadow-slate-900/[0.08] border border-slate-100/80 z-30 flex items-center gap-3 w-max pointer-events-none"
+                >
+                   <div className="w-10 h-10 bg-[#E8F5EC] rounded-xl flex items-center justify-center text-[#1B6B3A]">
+                      <Star className="w-5 h-5 fill-[#1B6B3A] text-[#1B6B3A]"/>
+                   </div>
+                   <div className="pr-1 text-left">
+                      <div className="text-[11px] text-slate-400 font-medium mb-0.5">Rating Aplikasi</div>
+                      <div className="text-[14px] font-bold text-slate-800">4.8 / 5.0</div>
+                   </div>
+                </motion.div>
+              )}
+           </div>
+        </div>
+
+        {/* ═══ Stats Counter Section ═══ */}
+        <div className="mb-28 relative">
+          {/* Decorative dot pattern behind stats */}
+          <div className="absolute -inset-x-8 -inset-y-12 dot-pattern rounded-[40px] opacity-60 pointer-events-none"></div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 relative z-10">
+            {[
+              { label: "Pengguna Aktif", suffix: "+", icon: Users, ref: stat1 },
+              { label: "Lapangan Tersedia", suffix: "+", icon: MapPin, ref: stat2 },
+              { label: "Jam Operasional", suffix: "/7", icon: Clock, ref: stat3 },
+              { label: "Uptime Sistem", suffix: "%", icon: Zap, ref: stat4 },
+            ].map((stat, i) => (
+              <motion.div
+                key={i}
+                ref={stat.ref.ref}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: i * 0.1 }}
+                className="bg-white/70 backdrop-blur-sm border border-slate-200/50 rounded-3xl p-6 sm:p-8 text-center hover:shadow-lg hover:bg-white hover:border-slate-200 transition-all duration-500 group"
+              >
+                <div className="w-12 h-12 mx-auto bg-emerald-50 text-emerald-500 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                  <stat.icon className="w-5 h-5" />
+                </div>
+                <div className="text-3xl sm:text-4xl font-extrabold text-slate-900 mb-1 tabular-nums">
+                  {stat.ref.count}{stat.suffix}
+                </div>
+                <div className="text-sm text-slate-500 font-medium">{stat.label}</div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+
+        {/* Section Divider */}
+        <div className="section-divider mb-20"></div>
+
+        {/* ═══ Latar Belakang Section (Tentang Kami) ═══ */}
+        <div id="tentang" className="pb-20 pt-8 -mt-8">
+           <motion.div 
+             initial={{ opacity: 0, y: 30 }}
+             whileInView={{ opacity: 1, y: 0 }}
+             viewport={{ once: true }}
+             transition={{ duration: 0.6 }}
+             className="bg-gradient-to-br from-slate-900 via-emerald-950 to-slate-900 rounded-[36px] sm:rounded-[44px] p-8 md:p-12 lg:p-16 relative overflow-hidden flex flex-col md:flex-row items-center gap-10 lg:gap-16 shadow-2xl noise-overlay"
+           >
+              <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-500/15 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3"></div>
+              <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-teal-500/10 rounded-full blur-[80px] translate-y-1/2 -translate-x-1/3"></div>
+              
+              <div className="flex-1 relative z-10 w-full">
+                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold uppercase tracking-wider mb-6">
+                  <Activity className="w-3.5 h-3.5" /> Latar Belakang
+                </div>
+                <h2 className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-white mb-6 leading-tight">Berawal Dari Sulitnya Mencari Jadwal Kosong.</h2>
+                <p className="text-emerald-100/70 text-base md:text-lg leading-relaxed mb-5">
+                  Seringkali komunitas olahraga kesulitan menemukan lapangan yang tersedia. Harus menelepon satu per satu, datang langsung hanya untuk mengecek jadwal, hingga risiko terjadinya <span className="font-bold text-white">double booking</span> karena pencatatan manual oleh pengelola.
+                </p>
+                <p className="text-emerald-100/70 text-base md:text-lg leading-relaxed">
+                  Lapangku hadir sebagai solusi digitalisasi melalui aplikasi berbasis Flutter dan Firebase. Mengubah pencarian manual menjadi pencarian real-time dalam genggaman, demi efisiensi waktu pengelola (Mitra) maupun pengguna (Customer).
+                </p>
+              </div>
+
+              <div className="w-full md:w-2/5 relative z-10 h-[280px]">
+                 <div className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-3xl p-6 shadow-2xl h-full relative overflow-hidden">
+                    <AnimatePresence mode="wait">
+                      {activeProblemSlide === 0 ? (
+                        <motion.div 
+                          key="problem"
+                          initial={{ opacity: 0, x: 20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: -20 }}
+                          transition={{ duration: 0.3 }}
+                          className="absolute inset-6"
+                        >
+                          <div className="flex items-center gap-2 mb-5 border-b border-white/10 pb-4">
+                             <div className="w-8 h-8 rounded-full bg-rose-500/15 flex items-center justify-center">
+                               <X className="w-4 h-4 text-rose-400" />
+                             </div>
+                             <span className="text-white/90 font-semibold text-sm">Masalah yang Ditemui</span>
+                          </div>
+                          <ul className="space-y-4">
+                            {["Informasi jadwal tidak terpusat", "Risiko bentrok jadwal sangat tinggi", "Metode reservasi masih konvensional"].map((issue, i) => (
+                              <li key={i} className="flex items-start gap-3">
+                                <div className="w-5 h-5 rounded-full bg-rose-500/15 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                  <X className="w-3 h-3 text-rose-400" />
+                                </div>
+                                <span className="text-emerald-50/80 text-sm leading-relaxed">{issue}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </motion.div>
+                      ) : (
+                        <motion.div 
+                          key="solution"
+                          initial={{ opacity: 0, x: 20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: -20 }}
+                          transition={{ duration: 0.3 }}
+                          className="absolute inset-6"
+                        >
+                          <div className="flex items-center gap-2 mb-5 border-b border-white/10 pb-4">
+                             <div className="w-8 h-8 rounded-full bg-emerald-500/15 flex items-center justify-center">
+                               <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                             </div>
+                             <span className="text-white/90 font-semibold text-sm">Solusi Lapangku</span>
+                          </div>
+                          <ul className="space-y-4">
+                            {["Pencarian jadwal real-time", "Sistem booking otomatis bebas bentrok", "Konfirmasi pembayaran terintegrasi"].map((issue, i) => (
+                              <li key={i} className="flex items-start gap-3">
+                                <div className="w-5 h-5 rounded-full bg-emerald-500/15 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                  <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                                </div>
+                                <span className="text-emerald-50/90 text-sm leading-relaxed">{issue}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                    
+                    {/* Slide Indicators */}
+                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-1.5">
+                      <div className={`h-1.5 rounded-full transition-all duration-300 ${activeProblemSlide === 0 ? 'w-4 bg-rose-400' : 'w-1.5 bg-white/20'}`}></div>
+                      <div className={`h-1.5 rounded-full transition-all duration-300 ${activeProblemSlide === 1 ? 'w-4 bg-emerald-400' : 'w-1.5 bg-white/20'}`}></div>
+                    </div>
+                 </div>
+              </div>
+           </motion.div>
+        </div>
+
+        {/* ═══ Feature Sections ═══ */}
+        <div id="fitur" className="pt-10 pb-8">
+           
+           <motion.div 
+             initial={{ opacity: 0, y: 20 }}
+             whileInView={{ opacity: 1, y: 0 }}
+             viewport={{ once: true }}
+             transition={{ duration: 0.5 }}
+             className="text-center max-w-2xl mx-auto mb-16"
+           >
+             <span className="text-emerald-500 font-bold uppercase tracking-widest text-xs mb-3 block">Keunggulan Utama</span>
+             <h3 className="text-3xl sm:text-4xl font-extrabold text-slate-900 mb-4">Satu Aplikasi, Ragam Kemudahan</h3>
+             <p className="text-slate-500 leading-relaxed">Kami mengintegrasikan setiap tahap pencarian, pemesanan, hingga pembayaran menjadi satu ekosistem yang kohesif.</p>
+           </motion.div>
+
+           <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-20 max-w-6xl mx-auto">
+              {isLoading ? (
+                <>
+                  {[1,2,3,4].map(i => (
+                    <div key={i} className={`${i === 1 || i === 4 ? 'md:col-span-2' : ''} bg-white rounded-[28px] p-8 border border-slate-100 h-[280px] animate-pulse`}>
+                       <div className="w-12 h-12 bg-slate-200 rounded-2xl mb-5"></div>
+                       <div className="h-5 bg-slate-200 rounded-full w-2/4 mb-4"></div>
+                       <div className="h-3.5 bg-slate-200 rounded-full w-full mb-2"></div>
+                       <div className="h-3.5 bg-slate-200 rounded-full w-4/5"></div>
+                    </div>
+                  ))}
+                </>
+              ) : (
+                <>
+                  <motion.div 
+                    initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }}
+                    className="md:col-span-2 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-[28px] p-8 md:p-10 text-white hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 relative overflow-hidden group"
+                  >
+                     <div className="absolute top-0 right-0 w-72 h-72 bg-emerald-500/8 rounded-full blur-3xl group-hover:bg-emerald-500/15 group-hover:scale-125 transition-all duration-700"></div>
+                     <div className="relative z-10">
+                       <div className="w-12 h-12 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center mb-6 border border-white/10 group-hover:scale-110 transition-transform duration-300">
+                          <Activity className="w-5 h-5 text-emerald-400" />
+                       </div>
+                       <h3 className="text-2xl md:text-3xl font-extrabold mb-3 tracking-tight">Platform Overview</h3>
+                       <p className="text-slate-400 text-sm md:text-base max-w-lg leading-relaxed">
+                         Lapangku adalah aplikasi mobile berbasis Flutter yang menghubungkan Customer dengan Mitra pengelola lapangan. Didukung oleh Firebase untuk autentikasi, database real-time, dan notifikasi push.
+                       </p>
+                       <div className="mt-8 inline-flex items-center space-x-2 bg-emerald-500/15 px-3.5 py-2 rounded-full border border-emerald-500/20">
+                          <span className="relative flex h-2 w-2">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
+                          </span>
+                          <span className="text-[11px] font-bold text-emerald-300 uppercase tracking-widest">Versi Rilis 1.0</span>
+                       </div>
+                     </div>
+                  </motion.div>
+
+                  <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.1 }}
+                    className="bg-gradient-to-br from-emerald-50 to-teal-50/50 rounded-[28px] p-8 border border-emerald-100/80 hover:shadow-xl hover:shadow-emerald-100/50 hover:-translate-y-1 transition-all duration-500 group flex flex-col justify-between"
+                  >
+                    <div>
+                      <div className="w-11 h-11 bg-white text-emerald-600 rounded-xl flex items-center justify-center mb-5 shadow-sm group-hover:scale-110 transition-transform duration-300">
+                         <MapPin className="w-5 h-5" />
+                      </div>
+                      <h3 className="text-xl font-bold text-emerald-950 mb-2.5 tracking-tight">Pencarian Cepat</h3>
+                      <p className="text-emerald-800/70 leading-relaxed text-sm">Temukan lapangan terdekat dalam hitungan detik berdasarkan lokasi & kategori olahraga.</p>
+                    </div>
+                  </motion.div>
+
+                  <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.15 }}
+                    className="bg-white rounded-[28px] p-8 border border-slate-100/80 hover:shadow-xl hover:-translate-y-1 transition-all duration-500 group shadow-sm flex flex-col justify-between"
+                  >
+                    <div>
+                      <div className="w-11 h-11 bg-sky-50 text-sky-500 rounded-xl flex items-center justify-center mb-5 border border-sky-100 shadow-sm group-hover:scale-110 transition-transform duration-300">
+                         <CalendarClock className="w-5 h-5" />
+                      </div>
+                      <h3 className="text-xl font-bold text-slate-900 mb-2.5 tracking-tight">Jadwal Real-time</h3>
+                      <p className="text-slate-500 leading-relaxed text-sm">Jadwal tersinkronisasi via Cloud Firestore untuk mencegah double booking. Cek ketersediaan tanpa ragu.</p>
+                    </div>
+                  </motion.div>
+
+                  <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.2 }}
+                    className="md:col-span-2 bg-gradient-to-br from-emerald-500 via-emerald-500 to-teal-500 rounded-[28px] p-8 md:p-10 text-white hover:shadow-xl hover:shadow-emerald-500/20 hover:-translate-y-1 transition-all duration-500 group overflow-hidden relative"
+                  >
+                    <div className="absolute top-1/2 right-0 -translate-y-1/2 w-56 h-56 bg-white/[0.07] rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
+                    <div className="relative z-10 flex flex-col justify-center h-full">
+                       <div className="w-11 h-11 bg-white/20 backdrop-blur-md text-white rounded-xl flex items-center justify-center mb-5 shadow-sm group-hover:scale-110 transition-transform duration-300">
+                          <Upload className="w-5 h-5" />
+                       </div>
+                       <h3 className="text-2xl md:text-3xl font-extrabold mb-2.5 tracking-tight">Konfirmasi Pembayaran</h3>
+                       <p className="text-emerald-50/90 text-sm md:text-base leading-relaxed max-w-md">Upload bukti pembayaran langsung dari aplikasi. Mitra memverifikasi transaksi Anda dengan cepat dan aman melalui sistem konfirmasi digital.</p>
+                    </div>
+                  </motion.div>
+
+                  {/* ═══ Role-based Features (Fitur Kita) ═══ */}
+                  <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.25 }}
+                    className="bg-white rounded-[28px] p-8 border border-slate-100/80 hover:shadow-xl hover:-translate-y-1 transition-all duration-500 group shadow-sm flex flex-col justify-between"
+                  >
+                    <div>
+                      <div className="w-11 h-11 bg-blue-50 text-blue-500 rounded-xl flex items-center justify-center mb-5 border border-blue-100 shadow-sm group-hover:scale-110 transition-transform duration-300">
+                         <UserCircle className="w-5 h-5" />
+                      </div>
+                      <h3 className="text-xl font-bold text-slate-900 mb-2.5 tracking-tight">Untuk Customer</h3>
+                      <p className="text-slate-500 leading-relaxed text-sm">Cari lapangan, pilih jadwal kosong, dan kelola riwayat pesanan dengan mudah dari satu dashboard terpusat.</p>
+                    </div>
+                  </motion.div>
+
+                  <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.3 }}
+                    className="bg-white rounded-[28px] p-8 border border-slate-100/80 hover:shadow-xl hover:-translate-y-1 transition-all duration-500 group shadow-sm flex flex-col justify-between"
+                  >
+                    <div>
+                      <div className="w-11 h-11 bg-amber-50 text-amber-500 rounded-xl flex items-center justify-center mb-5 border border-amber-100 shadow-sm group-hover:scale-110 transition-transform duration-300">
+                         <Store className="w-5 h-5" />
+                      </div>
+                      <h3 className="text-xl font-bold text-slate-900 mb-2.5 tracking-tight">Untuk Mitra</h3>
+                      <p className="text-slate-500 leading-relaxed text-sm">Kelola operasional lapangan, verifikasi bukti pembayaran, dan pantau laporan pendapatan secara real-time.</p>
+                    </div>
+                  </motion.div>
+
+                  <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.35 }}
+                    className="bg-white rounded-[28px] p-8 border border-slate-100/80 hover:shadow-xl hover:-translate-y-1 transition-all duration-500 group shadow-sm flex flex-col justify-between"
+                  >
+                    <div>
+                      <div className="w-11 h-11 bg-purple-50 text-purple-500 rounded-xl flex items-center justify-center mb-5 border border-purple-100 shadow-sm group-hover:scale-110 transition-transform duration-300">
+                         <Shield className="w-5 h-5" />
+                      </div>
+                      <h3 className="text-xl font-bold text-slate-900 mb-2.5 tracking-tight">Untuk Admin</h3>
+                      <p className="text-slate-500 leading-relaxed text-sm">Pusat kendali untuk memverifikasi akun Mitra baru dan mengawasi seluruh aktivitas platform Lapangku.</p>
+                    </div>
+                  </motion.div>
+                </>
+              )}
+           </div>
+        </div>
+
+        {/* Section Divider */}
+        <div className="section-divider mb-16"></div>
+
+        {/* ═══ Sports Categories Section ═══ */}
+        <div className="pt-4 pb-20">
+           <motion.div 
+             initial={{ opacity: 0, y: 20 }}
+             whileInView={{ opacity: 1, y: 0 }}
+             viewport={{ once: true }}
+             transition={{ duration: 0.5 }}
+             className="text-center max-w-2xl mx-auto mb-12"
+           >
+             <span className="text-emerald-500 font-bold uppercase tracking-widest text-xs mb-3 block">Kategori</span>
+             <h3 className="text-3xl sm:text-4xl font-extrabold text-slate-900 mb-4">Temukan Lapangan Favoritmu</h3>
+           </motion.div>
+           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+              {[
+                { name: "Futsal", icon: PlayCircle, color: "group-hover:bg-emerald-50 group-hover:text-emerald-500 group-hover:border-emerald-200" },
+                { name: "Badminton", icon: Trophy, color: "group-hover:bg-sky-50 group-hover:text-sky-500 group-hover:border-sky-200" },
+                { name: "Basket", icon: Dribbble, color: "group-hover:bg-orange-50 group-hover:text-orange-500 group-hover:border-orange-200" },
+                { name: "Tennis", icon: Activity, color: "group-hover:bg-violet-50 group-hover:text-violet-500 group-hover:border-violet-200" }
+              ].map((sport, i) => (
+                <motion.div 
+                  key={i}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.4, delay: i * 0.1 }}
+                  className="flex flex-col items-center justify-center p-6 sm:p-8 bg-white/70 backdrop-blur-sm border border-slate-200/50 rounded-3xl hover:shadow-xl hover:bg-white transition-all duration-500 group cursor-pointer hover:-translate-y-1"
+                >
+                   <div className={`w-16 h-16 sm:w-20 sm:h-20 bg-slate-50 text-slate-400 rounded-2xl flex items-center justify-center mb-4 border border-slate-100 transition-all duration-300 ${sport.color}`}>
+                      <sport.icon className="w-7 h-7 sm:w-9 sm:h-9" />
+                   </div>
+                   <span className="font-bold text-slate-700 group-hover:text-slate-900 text-sm sm:text-base">{sport.name}</span>
+                </motion.div>
+              ))}
+           </div>
+        </div>
+
+        {/* Section Divider */}
+        <div className="section-divider mb-16"></div>
+
+        {/* ═══ How It Works Section ═══ */}
+        <div className="pt-4 pb-20">
+           <motion.div 
+             initial={{ opacity: 0, y: 20 }}
+             whileInView={{ opacity: 1, y: 0 }}
+             viewport={{ once: true }}
+             transition={{ duration: 0.5 }}
+             className="text-center max-w-2xl mx-auto mb-16"
+           >
+             <span className="text-emerald-500 font-bold uppercase tracking-widest text-xs mb-3 block">Cara Kerja</span>
+             <h3 className="text-3xl sm:text-4xl font-extrabold text-slate-900 mb-4">Mulai Main Dalam 4 Langkah</h3>
+           </motion.div>
+           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 relative">
+              {/* Connecting Line */}
+              <div className="hidden md:block absolute top-14 left-[14%] right-[14%] h-[2px] -z-10">
+                <div className="w-full h-full bg-gradient-to-r from-emerald-200 via-teal-200 to-emerald-200 rounded-full"></div>
+              </div>
+              
+              {[
+                { title: "Cari Lapangan", desc: "Pilih fasilitas terdekat dan tentukan jenis olahraga.", icon: Search },
+                { title: "Pilih Jadwal", desc: "Tentukan hari dan jam sesuai ketersediaan real-time.", icon: CalendarClock },
+                { title: "Pembayaran", desc: "Transfer ke rekening Mitra lalu upload bukti bayar di aplikasi.", icon: CreditCard },
+                { title: "Mulai Main", desc: "Setelah Mitra konfirmasi, tunjukkan bukti booking dan langsung main!", icon: CheckCircle2 }
+              ].map((step, i) => (
+                <motion.div 
+                  key={i}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: i * 0.15 }}
+                  className="flex flex-col items-center text-center relative group"
+                >
+                  <div className="w-18 h-18 md:w-24 md:h-24 bg-white border-[5px] border-slate-50 text-emerald-500 shadow-lg shadow-slate-200/60 rounded-full flex items-center justify-center mb-6 relative z-10 group-hover:shadow-xl group-hover:shadow-emerald-100/50 transition-all duration-300">
+                     <step.icon className="w-6 h-6 md:w-7 md:h-7" />
+                     <div className="absolute -top-1.5 -right-1.5 w-7 h-7 md:w-8 md:h-8 bg-gradient-to-br from-emerald-500 to-teal-500 text-white rounded-full flex items-center justify-center text-[11px] md:text-sm font-bold border-[3px] border-white shadow-sm">
+                       {i + 1}
+                     </div>
+                  </div>
+                  <h4 className="text-lg md:text-xl font-bold text-slate-900 mb-2">{step.title}</h4>
+                  <p className="text-sm text-slate-500 px-4 leading-relaxed">{step.desc}</p>
+                </motion.div>
+              ))}
+           </div>
+        </div>
+
+        {/* ═══ Tech Showcase Section ═══ */}
+        <div className="pt-4 pb-20">
+          <motion.div 
+             initial={{ opacity: 0, y: 20 }}
+             whileInView={{ opacity: 1, y: 0 }}
+             viewport={{ once: true }}
+             transition={{ duration: 0.5 }}
+             className="text-center max-w-3xl mx-auto"
+          >
+             <p className="text-slate-400 font-bold mb-6 uppercase tracking-widest text-xs">Dibangun Menggunakan Teknologi Modern</p>
+             <div className="flex flex-col sm:flex-row justify-center items-center gap-5 border border-slate-200/50 w-fit mx-auto px-8 sm:px-10 py-6 sm:py-7 rounded-3xl bg-white/70 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-300">
+                <div className="flex items-center gap-3">
+                   <div className="w-11 h-11 rounded-xl bg-sky-50 flex items-center justify-center text-sky-500 border border-sky-100">
+                     <Smartphone className="w-5 h-5" />
+                   </div>
+                   <div className="text-left">
+                     <div className="font-bold text-slate-800 leading-none mb-1">Flutter</div>
+                     <div className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Mobile UI Framework</div>
+                   </div>
+                </div>
+                <div className="w-px h-10 bg-slate-200 hidden sm:block"></div>
+                <div className="h-px w-full bg-slate-200 block sm:hidden"></div>
+                <div className="flex items-center gap-3">
+                   <div className="w-11 h-11 rounded-xl bg-amber-50 flex items-center justify-center text-amber-500 border border-amber-100">
+                     <Server className="w-5 h-5" />
+                   </div>
+                   <div className="text-left">
+                     <div className="font-bold text-slate-800 leading-none mb-1">Firebase</div>
+                     <div className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Backend & Cloud Functions</div>
+                   </div>
+                </div>
+             </div>
+          </motion.div>
+        </div>
+
+        {/* Section Divider */}
+        <div className="section-divider mb-10"></div>
+
+        {/* ═══ Demo Aplikasi Web Section ═══ */}
+        <div id="demo" className="pt-10 pb-20">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="text-center max-w-2xl mx-auto mb-12"
+          >
+            <span className="text-emerald-500 font-bold uppercase tracking-widest text-xs mb-3 block">Demo Interaktif</span>
+            <h3 className="text-3xl sm:text-4xl font-extrabold text-slate-900 mb-4">Lihat Aplikasi Web Beraksi</h3>
+            <p className="text-slate-500 leading-relaxed">Jelajahi tampilan dashboard web Lapangku secara langsung. Klik tab di bawah untuk melihat berbagai fitur manajemen.</p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 30, scale: 0.97 }}
+            whileInView={{ opacity: 1, y: 0, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="max-w-5xl mx-auto"
+          >
+            {/* Browser Chrome */}
+            <div className="bg-gradient-to-b from-slate-800 to-slate-900 rounded-t-2xl pt-3 px-3 shadow-2xl shadow-slate-900/30 border border-slate-700/50">
+              {/* Title bar */}
+              <div className="flex items-center justify-between mb-2.5">
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-3 h-3 rounded-full bg-[#FF5F57] border border-[#E0443E] shadow-inner"></div>
+                    <div className="w-3 h-3 rounded-full bg-[#FEBC2E] border border-[#DEA123] shadow-inner"></div>
+                    <div className="w-3 h-3 rounded-full bg-[#28C840] border border-[#14AE2A] shadow-inner"></div>
+                  </div>
+                </div>
+                {/* URL Bar */}
+                <div className="flex-1 mx-4 bg-slate-700/60 rounded-lg px-3 py-1.5 flex items-center gap-2 border border-slate-600/30">
+                  <Globe className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
+                  <span className="text-[11px] text-slate-400 font-medium select-all truncate">https://dashboard.lapangku.id/admin</span>
+                  <div className="ml-auto flex items-center gap-1">
+                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.6)]"></div>
+                    <span className="text-[9px] text-emerald-400 font-bold">Secure</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-6 h-6 rounded bg-slate-700/40 flex items-center justify-center text-slate-400 hover:bg-slate-600/60 transition-colors cursor-pointer">
+                    <Layout className="w-3 h-3" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Browser Content */}
+            <div className="bg-[#F1F5F9] rounded-b-2xl overflow-hidden border-x border-b border-slate-200/60 shadow-2xl shadow-slate-900/10">
+              {/* Sidebar + Content Layout */}
+              <div className="flex min-h-[480px] sm:min-h-[520px]">
+                {/* Sidebar */}
+                <div className="hidden sm:flex w-56 bg-white border-r border-slate-200/60 flex-col flex-shrink-0">
+                  {/* Sidebar Brand */}
+                  <div className="px-4 py-4 border-b border-slate-100">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center shadow-md shadow-emerald-500/25">
+                        <Smartphone className="w-4 h-4 text-white" />
+                      </div>
+                      <span className="font-extrabold text-sm text-slate-800">Lapangku<span className="text-emerald-500">.</span></span>
+                    </div>
+                  </div>
+
+                  {/* Sidebar Nav */}
+                  <div className="flex-1 px-2.5 py-3 space-y-0.5">
+                    <button
+                      onClick={() => setWebDemoTab('dashboard')}
+                      className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[12px] font-semibold transition-all duration-200 ${
+                        webDemoTab === 'dashboard'
+                          ? 'bg-emerald-50 text-emerald-700 shadow-sm border border-emerald-100'
+                          : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'
+                      }`}
+                    >
+                      <Layout className="w-4 h-4" />
+                      Dashboard
+                    </button>
+                    <button
+                      onClick={() => setWebDemoTab('lapangan')}
+                      className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[12px] font-semibold transition-all duration-200 ${
+                        webDemoTab === 'lapangan'
+                          ? 'bg-emerald-50 text-emerald-700 shadow-sm border border-emerald-100'
+                          : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'
+                      }`}
+                    >
+                      <MapPin className="w-4 h-4" />
+                      Manajemen Lapangan
+                    </button>
+                    <button
+                      onClick={() => setWebDemoTab('analitik')}
+                      className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[12px] font-semibold transition-all duration-200 ${
+                        webDemoTab === 'analitik'
+                          ? 'bg-emerald-50 text-emerald-700 shadow-sm border border-emerald-100'
+                          : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'
+                      }`}
+                    >
+                      <BarChart3 className="w-4 h-4" />
+                      Analitik
+                    </button>
+                    <div className="!mt-2 border-t border-slate-100 pt-2">
+                      <div className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[12px] font-semibold text-slate-400 cursor-default">
+                        <Settings className="w-4 h-4" />
+                        Pengaturan
+                      </div>
+                      <div className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[12px] font-semibold text-slate-400 cursor-default">
+                        <FileText className="w-4 h-4" />
+                        Laporan
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Sidebar User */}
+                  <div className="px-3 py-3 border-t border-slate-100">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-full flex items-center justify-center text-white text-[10px] font-bold shadow-sm">AD</div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-[11px] font-bold text-slate-700 truncate">Admin Lapangku</div>
+                        <div className="text-[9px] text-slate-400 font-medium">Super Admin</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Mobile Tab Bar (shown on small screens instead of sidebar) */}
+                <div className="sm:hidden absolute top-0 inset-x-0 bg-white border-b border-slate-200/60 flex z-10">
+                  {[
+                    { key: 'dashboard' as const, label: 'Dashboard', icon: Layout },
+                    { key: 'lapangan' as const, label: 'Lapangan', icon: MapPin },
+                    { key: 'analitik' as const, label: 'Analitik', icon: BarChart3 },
+                  ].map((tab) => (
+                    <button
+                      key={tab.key}
+                      onClick={() => setWebDemoTab(tab.key)}
+                      className={`flex-1 flex flex-col items-center gap-1 py-2.5 text-[9px] font-bold transition-all ${
+                        webDemoTab === tab.key
+                          ? 'text-emerald-600 border-b-2 border-emerald-500'
+                          : 'text-slate-400'
+                      }`}
+                    >
+                      <tab.icon className="w-3.5 h-3.5" />
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Main Content Area */}
+                <div className="flex-1 overflow-hidden relative">
+                  <div className="p-4 sm:p-6 sm:pt-5 pt-12 sm:pt-5 h-full overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                    <AnimatePresence mode="wait">
+                      {webDemoTab === 'dashboard' && (
+                        <motion.div
+                          key="web-dashboard"
+                          initial={{ opacity: 0, x: 15 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: -15 }}
+                          transition={{ duration: 0.25 }}
+                        >
+                          {/* Page Header */}
+                          <div className="flex items-center justify-between mb-5">
+                            <div>
+                              <h4 className="text-lg sm:text-xl font-extrabold text-slate-800">Dashboard</h4>
+                              <p className="text-[11px] sm:text-xs text-slate-400 font-medium">Selamat datang kembali, Admin 👋</p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <div className="hidden sm:flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-lg border border-slate-200/60 text-[11px] text-slate-500 font-medium shadow-sm">
+                                <CalendarClock className="w-3.5 h-3.5 text-slate-400" />
+                                Hari Ini
+                              </div>
+                              <div className="relative">
+                                <Bell className="w-5 h-5 text-slate-400" />
+                                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-rose-500 rounded-full border-2 border-[#F1F5F9]"></span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Stats Grid */}
+                          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
+                            {[
+                              { label: 'Total Booking', value: '1,284', change: '+12.5%', icon: CalendarClock, color: 'text-emerald-600 bg-emerald-50', changeColor: 'text-emerald-600' },
+                              { label: 'Pendapatan', value: 'Rp 42.5M', change: '+8.2%', icon: TrendingUp, color: 'text-sky-600 bg-sky-50', changeColor: 'text-sky-600' },
+                              { label: 'Pengguna Aktif', value: '3,847', change: '+23.1%', icon: Users, color: 'text-violet-600 bg-violet-50', changeColor: 'text-violet-600' },
+                              { label: 'Mitra Terverif.', value: '56', change: '+4', icon: Store, color: 'text-amber-600 bg-amber-50', changeColor: 'text-amber-600' },
+                            ].map((stat, i) => (
+                              <div key={i} className="bg-white rounded-xl p-3.5 border border-slate-100/80 shadow-sm hover:shadow-md transition-shadow">
+                                <div className="flex items-center justify-between mb-2">
+                                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${stat.color}`}>
+                                    <stat.icon className="w-4 h-4" />
+                                  </div>
+                                  <span className={`text-[10px] font-bold ${stat.changeColor}`}>{stat.change}</span>
+                                </div>
+                                <div className="text-lg sm:text-xl font-extrabold text-slate-800 leading-none mb-0.5">{stat.value}</div>
+                                <div className="text-[10px] text-slate-400 font-semibold">{stat.label}</div>
+                              </div>
+                            ))}
+                          </div>
+
+                          {/* Recent Bookings Table */}
+                          <div className="bg-white rounded-xl border border-slate-100/80 shadow-sm overflow-hidden">
+                            <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
+                              <h5 className="font-bold text-[13px] text-slate-700">Booking Terbaru</h5>
+                              <button className="text-[10px] font-bold text-emerald-600 hover:text-emerald-700 flex items-center gap-0.5">
+                                Lihat Semua <ChevronRight className="w-3 h-3" />
+                              </button>
+                            </div>
+                            <div className="overflow-x-auto">
+                              <table className="w-full text-[11px]">
+                                <thead>
+                                  <tr className="bg-slate-50/50">
+                                    <th className="text-left px-4 py-2.5 font-bold text-slate-400 uppercase tracking-wider text-[9px]">Customer</th>
+                                    <th className="text-left px-4 py-2.5 font-bold text-slate-400 uppercase tracking-wider text-[9px] hidden sm:table-cell">Lapangan</th>
+                                    <th className="text-left px-4 py-2.5 font-bold text-slate-400 uppercase tracking-wider text-[9px]">Jadwal</th>
+                                    <th className="text-left px-4 py-2.5 font-bold text-slate-400 uppercase tracking-wider text-[9px]">Status</th>
+                                  </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-50">
+                                  {[
+                                    { name: 'Budi Santoso', field: 'Futsal A - GOR Pahlawan', time: 'Hari Ini, 16:00', status: 'Dikonfirmasi', statusColor: 'bg-emerald-50 text-emerald-700' },
+                                    { name: 'Andi Saputra', field: 'Badminton 1 - Sport Center', time: 'Hari Ini, 19:00', status: 'Menunggu', statusColor: 'bg-amber-50 text-amber-700' },
+                                    { name: 'Sari Dewi', field: 'Futsal B - GOR Pahlawan', time: 'Besok, 08:00', status: 'Dikonfirmasi', statusColor: 'bg-emerald-50 text-emerald-700' },
+                                    { name: 'Riko Pratama', field: 'Basket 1 - Arena Sport', time: 'Besok, 14:00', status: 'Dibatalkan', statusColor: 'bg-rose-50 text-rose-700' },
+                                  ].map((row, i) => (
+                                    <tr key={i} className="hover:bg-slate-50/50 transition-colors">
+                                      <td className="px-4 py-2.5">
+                                        <div className="flex items-center gap-2">
+                                          <div className="w-6 h-6 bg-gradient-to-br from-slate-200 to-slate-300 rounded-full flex items-center justify-center text-[8px] font-bold text-slate-600 flex-shrink-0">{row.name.charAt(0)}</div>
+                                          <span className="font-semibold text-slate-700 truncate">{row.name}</span>
+                                        </div>
+                                      </td>
+                                      <td className="px-4 py-2.5 text-slate-500 hidden sm:table-cell truncate max-w-[160px]">{row.field}</td>
+                                      <td className="px-4 py-2.5 text-slate-500 whitespace-nowrap">{row.time}</td>
+                                      <td className="px-4 py-2.5">
+                                        <span className={`${row.statusColor} text-[9px] font-bold px-2 py-0.5 rounded-full`}>{row.status}</span>
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+
+                      {webDemoTab === 'lapangan' && (
+                        <motion.div
+                          key="web-lapangan"
+                          initial={{ opacity: 0, x: 15 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: -15 }}
+                          transition={{ duration: 0.25 }}
+                        >
+                          {/* Page Header */}
+                          <div className="flex items-center justify-between mb-5">
+                            <div>
+                              <h4 className="text-lg sm:text-xl font-extrabold text-slate-800">Manajemen Lapangan</h4>
+                              <p className="text-[11px] sm:text-xs text-slate-400 font-medium">Kelola semua lapangan yang terdaftar di platform</p>
+                            </div>
+                            <button className="flex items-center gap-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-[11px] font-bold px-3 py-2 rounded-lg shadow-sm shadow-emerald-500/25 transition-all">
+                              <Plus className="w-3.5 h-3.5" />
+                              <span className="hidden sm:inline">Tambah Lapangan</span>
+                            </button>
+                          </div>
+
+                          {/* Search & Filter */}
+                          <div className="flex gap-2 mb-4">
+                            <div className="flex-1 bg-white rounded-lg border border-slate-200/60 flex items-center gap-2 px-3 py-2 shadow-sm">
+                              <Search className="w-3.5 h-3.5 text-slate-400" />
+                              <span className="text-[11px] text-slate-400 font-medium">Cari lapangan...</span>
+                            </div>
+                            <button className="bg-white rounded-lg border border-slate-200/60 px-3 py-2 text-slate-500 shadow-sm hover:bg-slate-50 transition-colors">
+                              <Settings className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+
+                          {/* Fields Grid */}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            {[
+                              { name: 'Lapangan Futsal A', venue: 'GOR Pahlawan', type: 'Futsal • Indoor', price: 'Rp 150.000/jam', status: 'Aktif', statusColor: 'bg-emerald-50 text-emerald-700', bookings: 48, image: 'https://images.unsplash.com/photo-1575361204480-aadea25e6e68?auto=format&fit=crop&q=80&w=200' },
+                              { name: 'Lapangan Futsal B', venue: 'GOR Pahlawan', type: 'Futsal • Indoor', price: 'Rp 150.000/jam', status: 'Aktif', statusColor: 'bg-emerald-50 text-emerald-700', bookings: 35, image: 'https://images.unsplash.com/photo-1575361204480-aadea25e6e68?auto=format&fit=crop&q=80&w=200' },
+                              { name: 'Badminton Court 1', venue: 'Sport Center', type: 'Badminton • Indoor', price: 'Rp 80.000/jam', status: 'Aktif', statusColor: 'bg-emerald-50 text-emerald-700', bookings: 62, image: 'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?auto=format&fit=crop&q=80&w=200' },
+                              { name: 'Basket Court 1', venue: 'Arena Sport', type: 'Basket • Outdoor', price: 'Rp 120.000/jam', status: 'Maintenance', statusColor: 'bg-amber-50 text-amber-700', bookings: 21, image: 'https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&q=80&w=200' },
+                            ].map((field, i) => (
+                              <div key={i} className="bg-white rounded-xl border border-slate-100/80 shadow-sm overflow-hidden hover:shadow-md hover:border-slate-200 transition-all duration-300 group cursor-pointer">
+                                <div className="h-24 sm:h-28 bg-slate-200 relative overflow-hidden">
+                                  <div className="absolute inset-0 bg-cover bg-center group-hover:scale-105 transition-transform duration-500" style={{ backgroundImage: `url('${field.image}')` }}></div>
+                                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+                                  <span className={`absolute top-2 right-2 ${field.statusColor} text-[8px] font-bold px-2 py-0.5 rounded-full`}>{field.status}</span>
+                                </div>
+                                <div className="p-3">
+                                  <div className="flex items-start justify-between mb-1">
+                                    <div>
+                                      <h5 className="font-bold text-[12px] text-slate-800">{field.name}</h5>
+                                      <p className="text-[10px] text-slate-400 font-medium">{field.venue} • {field.type}</p>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-50">
+                                    <span className="text-[11px] font-extrabold text-emerald-600">{field.price}</span>
+                                    <span className="text-[9px] text-slate-400 font-medium">{field.bookings} booking bulan ini</span>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </motion.div>
+                      )}
+
+                      {webDemoTab === 'analitik' && (
+                        <motion.div
+                          key="web-analitik"
+                          initial={{ opacity: 0, x: 15 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: -15 }}
+                          transition={{ duration: 0.25 }}
+                        >
+                          {/* Page Header */}
+                          <div className="mb-5">
+                            <h4 className="text-lg sm:text-xl font-extrabold text-slate-800">Analitik Platform</h4>
+                            <p className="text-[11px] sm:text-xs text-slate-400 font-medium">Ringkasan performa platform dalam 30 hari terakhir</p>
+                          </div>
+
+                          {/* Chart Placeholder */}
+                          <div className="bg-white rounded-xl border border-slate-100/80 shadow-sm p-4 mb-4">
+                            <div className="flex items-center justify-between mb-4">
+                              <h5 className="font-bold text-[13px] text-slate-700">Tren Booking Mingguan</h5>
+                              <div className="flex items-center gap-3 text-[9px] font-semibold">
+                                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-500"></span> Booking</span>
+                                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-sky-400"></span> Pendapatan</span>
+                              </div>
+                            </div>
+                            {/* Simulated Bar Chart */}
+                            <div className="flex items-end justify-between gap-2 h-32 sm:h-40 px-2">
+                              {[
+                                { h1: 45, h2: 35, label: 'Sen' },
+                                { h1: 65, h2: 55, label: 'Sel' },
+                                { h1: 55, h2: 48, label: 'Rab' },
+                                { h1: 80, h2: 70, label: 'Kam' },
+                                { h1: 90, h2: 82, label: 'Jum' },
+                                { h1: 100, h2: 95, label: 'Sab' },
+                                { h1: 70, h2: 60, label: 'Min' },
+                              ].map((bar, i) => (
+                                <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                                  <div className="w-full flex gap-0.5 items-end justify-center" style={{ height: '100%' }}>
+                                    <motion.div
+                                      initial={{ height: 0 }}
+                                      whileInView={{ height: `${bar.h1}%` }}
+                                      viewport={{ once: true }}
+                                      transition={{ duration: 0.6, delay: i * 0.08 }}
+                                      className="w-2.5 sm:w-4 bg-emerald-400 rounded-t-sm"
+                                    />
+                                    <motion.div
+                                      initial={{ height: 0 }}
+                                      whileInView={{ height: `${bar.h2}%` }}
+                                      viewport={{ once: true }}
+                                      transition={{ duration: 0.6, delay: i * 0.08 + 0.1 }}
+                                      className="w-2.5 sm:w-4 bg-sky-300 rounded-t-sm"
+                                    />
+                                  </div>
+                                  <span className="text-[8px] sm:text-[9px] text-slate-400 font-semibold">{bar.label}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Analytics Cards */}
+                          <div className="grid grid-cols-2 gap-3">
+                            <div className="bg-white rounded-xl p-3.5 border border-slate-100/80 shadow-sm">
+                              <div className="flex items-center gap-2 mb-2">
+                                <div className="w-7 h-7 bg-emerald-50 rounded-lg flex items-center justify-center text-emerald-600">
+                                  <TrendingUp className="w-3.5 h-3.5" />
+                                </div>
+                                <span className="text-[10px] font-bold text-slate-500">Konversi Booking</span>
+                              </div>
+                              <div className="text-xl font-extrabold text-slate-800">78.5%</div>
+                              <div className="text-[9px] text-emerald-600 font-bold">+5.2% dari bulan lalu</div>
+                            </div>
+                            <div className="bg-white rounded-xl p-3.5 border border-slate-100/80 shadow-sm">
+                              <div className="flex items-center gap-2 mb-2">
+                                <div className="w-7 h-7 bg-violet-50 rounded-lg flex items-center justify-center text-violet-600">
+                                  <Star className="w-3.5 h-3.5" />
+                                </div>
+                                <span className="text-[10px] font-bold text-slate-500">Rating Rata-rata</span>
+                              </div>
+                              <div className="text-xl font-extrabold text-slate-800">4.82</div>
+                              <div className="text-[9px] text-violet-600 font-bold">Dari 2,341 ulasan</div>
+                            </div>
+                            <div className="bg-white rounded-xl p-3.5 border border-slate-100/80 shadow-sm">
+                              <div className="flex items-center gap-2 mb-2">
+                                <div className="w-7 h-7 bg-sky-50 rounded-lg flex items-center justify-center text-sky-600">
+                                  <Clock className="w-3.5 h-3.5" />
+                                </div>
+                                <span className="text-[10px] font-bold text-slate-500">Waktu Populer</span>
+                              </div>
+                              <div className="text-xl font-extrabold text-slate-800">16:00</div>
+                              <div className="text-[9px] text-sky-600 font-bold">Jam paling banyak di-booking</div>
+                            </div>
+                            <div className="bg-white rounded-xl p-3.5 border border-slate-100/80 shadow-sm">
+                              <div className="flex items-center gap-2 mb-2">
+                                <div className="w-7 h-7 bg-amber-50 rounded-lg flex items-center justify-center text-amber-600">
+                                  <Activity className="w-3.5 h-3.5" />
+                                </div>
+                                <span className="text-[10px] font-bold text-slate-500">Utilisasi Lapangan</span>
+                              </div>
+                              <div className="text-xl font-extrabold text-slate-800">84.3%</div>
+                              <div className="text-[9px] text-amber-600 font-bold">Rata-rata occupancy</div>
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Demo Description Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8 max-w-5xl mx-auto">
+            {[
+              { icon: Monitor, title: 'Dashboard Admin', desc: 'Pantau semua aktivitas platform dan statistik real-time dari satu tempat.' },
+              { icon: MapPin, title: 'Kelola Lapangan', desc: 'Tambah, edit, dan monitor status semua lapangan yang terdaftar.' },
+              { icon: BarChart3, title: 'Analitik Mendalam', desc: 'Visualisasi data booking, pendapatan, dan performa platform.' },
+            ].map((card, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 15 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: i * 0.1 }}
+                className="bg-white/70 backdrop-blur-sm border border-slate-200/50 rounded-2xl p-5 hover:shadow-lg hover:bg-white transition-all duration-300 group cursor-pointer"
+              >
+                <div className="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300">
+                  <card.icon className="w-5 h-5" />
+                </div>
+                <h5 className="font-bold text-slate-800 mb-1">{card.title}</h5>
+                <p className="text-sm text-slate-500 leading-relaxed">{card.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+
+        {/* Section Divider */}
+        <div className="section-divider mb-10"></div>
+
+        {/* ═══ Team Section ═══ */}
+        <div id="tim" className="py-10">
+           <motion.div 
+             initial={{ opacity: 0, y: 20 }}
+             whileInView={{ opacity: 1, y: 0 }}
+             viewport={{ once: true }}
+             transition={{ duration: 0.5 }}
+             className="text-center max-w-2xl mx-auto mb-16"
+           >
+             <span className="text-emerald-500 font-bold uppercase tracking-widest text-xs mb-3 block">Tim Pengembang</span>
+             <h3 className="text-3xl sm:text-4xl font-extrabold text-slate-900 mb-4">Orang-Orang di Balik Lapangku</h3>
+             <p className="text-slate-500">Kolaborasi dalam mewujudkan solusi nyata berbasis teknologi dari kerangka Project Based Learning.</p>
+           </motion.div>
+           
+           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 lg:gap-6 mb-20">
+              {[
+                { name: "Maulana", role: "PM & Fullstack Customer", initial: "M", gradient: "from-blue-500 to-indigo-500" },
+                { name: "Maksum", role: "UI/UX Designer", initial: "MK", gradient: "from-violet-500 to-purple-500" },
+                { name: "Galuh", role: "Fullstack Admin", initial: "G", gradient: "from-amber-500 to-orange-500" },
+                { name: "Arsya", role: "Fullstack Mitra", initial: "A", gradient: "from-emerald-500 to-teal-500" }
+              ].map((member, i) => (
+                <motion.div 
+                  key={i}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: i * 0.1 }}
+                  className="bg-white/70 backdrop-blur-sm rounded-[28px] p-6 sm:p-7 text-center border border-slate-200/50 hover:shadow-xl hover:bg-white transition-all duration-500 hover:-translate-y-1.5 group"
+                >
+                  <div className={`w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br ${member.gradient} flex items-center justify-center text-xl font-bold mb-5 text-white shadow-lg group-hover:scale-110 group-hover:rounded-3xl transition-all duration-300`}>
+                     {member.initial}
+                  </div>
+                  <h4 className="font-extrabold text-slate-900 text-lg mb-1">{member.name}</h4>
+                  <span className="text-emerald-600 text-sm font-semibold">{member.role}</span>
+                </motion.div>
+              ))}
+           </div>
+        </div>
+
+        {/* Section Divider */}
+        <div className="section-divider mb-10"></div>
+
+        {/* ═══ FAQ Section ═══ */}
+        <div id="faq" className="pt-10 pb-20">
+           <motion.div 
+             initial={{ opacity: 0, y: 20 }}
+             whileInView={{ opacity: 1, y: 0 }}
+             viewport={{ once: true }}
+             transition={{ duration: 0.5 }}
+             className="text-center max-w-2xl mx-auto mb-16"
+           >
+             <span className="text-emerald-500 font-bold uppercase tracking-widest text-xs mb-3 block">Pusat Bantuan</span>
+             <h3 className="text-3xl sm:text-4xl font-extrabold text-slate-900 mb-4">Pertanyaan yang Sering Diajukan</h3>
+           </motion.div>
+
+           <div className="max-w-3xl mx-auto space-y-3">
+              {faqs.map((faq, index) => (
+                 <motion.div 
+                   key={index}
+                   initial={{ opacity: 0, y: 10 }}
+                   whileInView={{ opacity: 1, y: 0 }}
+                   viewport={{ once: true }}
+                   transition={{ duration: 0.4, delay: index * 0.08 }}
+                   className={`backdrop-blur-sm border rounded-2xl hover:shadow-md transition-all duration-300 overflow-hidden ${
+                     activeFaq === index 
+                       ? 'bg-white border-emerald-200/60 shadow-md' 
+                       : 'bg-white/60 border-slate-200/50 hover:bg-white/80'
+                   }`}
+                 >
+                    <button 
+                      onClick={() => toggleFaq(index)}
+                      className="w-full text-left px-6 py-5 flex items-center justify-between focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded-xl gap-4"
+                    >
+                      <span className={`font-semibold transition-colors duration-300 text-[15px] leading-snug ${activeFaq === index ? 'text-emerald-700' : 'text-slate-700'}`}>
+                        {faq.q}
+                      </span>
+                      <motion.div
+                        animate={{ rotate: activeFaq === index ? 180 : 0 }}
+                        transition={{ duration: 0.3 }}
+                        className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 ${activeFaq === index ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-400'}`}
+                      >
+                         <ChevronDown className="w-4 h-4" />
+                      </motion.div>
+                    </button>
+                    <AnimatePresence>
+                      {activeFaq === index && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.3, ease: "easeInOut" }}
+                        >
+                          <div className="px-6 pb-5 pt-0 text-slate-500 text-sm leading-relaxed">
+                            {faq.a}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                 </motion.div>
+              ))}
+           </div>
+        </div>
+
+        {/* ═══ CTA Section ═══ */}
+        <div className="py-10 mb-10">
+           <motion.div 
+             initial={{ opacity: 0, scale: 0.95 }}
+             whileInView={{ opacity: 1, scale: 1 }}
+             viewport={{ once: true }}
+             transition={{ duration: 0.6 }}
+             className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-[36px] sm:rounded-[44px] p-8 md:p-16 text-center shadow-2xl shadow-slate-900/20 relative overflow-hidden noise-overlay"
+           >
+              <div className="absolute top-0 right-0 w-72 h-72 bg-emerald-500/15 rounded-full blur-[80px]"></div>
+              <div className="absolute bottom-0 left-0 w-72 h-72 bg-sky-500/10 rounded-full blur-[80px]"></div>
+              
+              <h2 className="text-3xl md:text-5xl font-extrabold text-white mb-5 relative z-10 leading-tight">Siap Untuk Berkeringat<br className="hidden sm:block"/> Hari Ini?</h2>
+              <p className="text-slate-400 md:text-lg max-w-2xl mx-auto mb-10 relative z-10">Rasakan kemudahan booking lapangan olahraga secara digital. Cari, pesan, bayar, dan main — semua dalam satu aplikasi.</p>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 relative z-10">
+                <button className="w-full sm:w-auto bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-bold px-8 py-4 rounded-full shadow-xl shadow-emerald-500/25 hover:-translate-y-0.5 transition-all duration-300">
+                   Download Sekarang
+                </button>
+                <a href="https://github.com/Maulanahb/Lapangku" target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto bg-white/10 hover:bg-white/15 backdrop-blur-sm text-white font-bold px-8 py-4 rounded-full border border-white/15 hover:border-white/25 transition-all duration-300">
+                   Pelajari Selengkapnya
+                </a>
+              </div>
+           </motion.div>
+        </div>
+
+      </main>
+
+      {/* ═══ Footer ═══ */}
+      <footer className="border-t border-slate-200/60 bg-white/80 backdrop-blur-xl relative overflow-hidden">
+        {/* Decorative elements */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[1px] bg-gradient-to-r from-transparent via-emerald-400/30 to-transparent"></div>
+        <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-emerald-100/50 rounded-full blur-[80px] pointer-events-none"></div>
+        
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20 relative z-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 lg:gap-8 mb-16">
+            
+            {/* Brand Column */}
+            <div className="lg:col-span-4 flex flex-col gap-6">
+              <div className="flex items-center gap-2.5">
+                <div className="bg-gradient-to-br from-emerald-500 to-teal-500 p-2.5 rounded-xl text-white shadow-lg shadow-emerald-500/25">
+                  <Smartphone className="w-5 h-5" />
+                </div>
+                <span className="font-extrabold text-2xl tracking-tight text-slate-900">Lapangku<span className="text-emerald-500">.</span></span>
+              </div>
+              <p className="text-slate-500 text-sm leading-relaxed max-w-sm">
+                Platform booking lapangan olahraga inovatif. Temukan lapangan favoritmu, pesan jadwal, dan mulai main tanpa ribet. Dirancang khusus untuk kemudahan dan kenyamanan Anda.
+              </p>
+              <div className="flex items-center gap-3">
+                <a href="#/" className="w-10 h-10 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-400 hover:text-emerald-600 hover:border-emerald-200 hover:bg-emerald-50 transition-all">
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84"></path></svg>
+                </a>
+                <a href="#/" className="w-10 h-10 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-400 hover:text-emerald-600 hover:border-emerald-200 hover:bg-emerald-50 transition-all">
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path fillRule="evenodd" d="M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.218 2.427.465a4.902 4.902 0 011.772 1.153 4.902 4.902 0 011.153 1.772c.247.636.416 1.363.465 2.427.048 1.067.06 1.407.06 4.123v.08c0 2.643-.012 2.987-.06 4.043-.049 1.064-.218 1.791-.465 2.427a4.902 4.902 0 01-1.153 1.772 4.902 4.902 0 01-1.772 1.153c-.636.247-1.363.416-2.427.465-1.067.048-1.407.06-4.123.06h-.08c-2.643 0-2.987-.012-4.043-.06-1.064-.049-1.791-.218-2.427-.465a4.902 4.902 0 01-1.772-1.153 4.902 4.902 0 01-1.153-1.772c-.247-.636-.416-1.363-.465-2.427-.047-1.024-.06-1.379-.06-3.808v-.63c0-2.43.013-2.784.06-3.808.049-1.064.218-1.791.465-2.427a4.902 4.902 0 011.153-1.772A4.902 4.902 0 015.45 2.525c.636-.247 1.363-.416 2.427-.465C8.901 2.013 9.256 2 11.685 2h.63zm-.081 1.802h-.468c-2.456 0-2.784.011-3.807.058-.975.045-1.504.207-1.857.344-.467.182-.8.398-1.15.748-.35.35-.566.683-.748 1.15-.137.353-.3.882-.344 1.857-.047 1.023-.058 1.351-.058 3.807v.468c0 2.456.011 2.784.058 3.807.045.975.207 1.504.344 1.857.182.466.399.8.748 1.15.35.35.683.566 1.15.748.353.137.882.3 1.857.344 1.054.048 1.37.058 4.041.058h.08c2.597 0 2.917-.01 3.96-.058.976-.045 1.505-.207 1.858-.344.466-.182.8-.398 1.15-.748.35-.35.566-.683.748-1.15.137-.353.3-.882.344-1.857.048-1.055.058-1.37.058-4.041v-.08c0-2.597-.01-2.917-.058-3.96-.045-.976-.207-1.505-.344-1.858a3.097 3.097 0 00-.748-1.15 3.098 3.098 0 00-1.15-.748c-.353-.137-.882-.3-1.857-.344-1.023-.047-1.351-.058-3.807-.058zM12 6.865a5.135 5.135 0 110 10.27 5.135 5.135 0 010-10.27zm0 1.802a3.333 3.333 0 100 6.666 3.333 3.333 0 000-6.666zm5.338-3.205a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4z" clipRule="evenodd"></path></svg>
+                </a>
+                <a href="https://github.com/Maulanahb/Lapangku" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-400 hover:text-emerald-600 hover:border-emerald-200 hover:bg-emerald-50 transition-all">
+                  <Github className="w-4 h-4" />
+                </a>
+              </div>
+            </div>
+
+            {/* Links Columns */}
+            <div className="lg:col-span-8 grid grid-cols-2 sm:grid-cols-3 gap-8">
+              <div className="flex flex-col gap-4">
+                <h4 className="font-bold text-slate-900 mb-1">Navigasi Utama</h4>
+                <a href="#beranda" className="text-sm text-slate-500 hover:text-emerald-600 transition-colors">Beranda</a>
+                <a href="#tentang" className="text-sm text-slate-500 hover:text-emerald-600 transition-colors">Tentang Aplikasi</a>
+                <a href="#fitur" className="text-sm text-slate-500 hover:text-emerald-600 transition-colors">Fitur Unggulan</a>
+              </div>
+              
+              <div className="flex flex-col gap-4">
+                <h4 className="font-bold text-slate-900 mb-1">Informasi Lengkap</h4>
+                <a href="#tim" className="text-sm text-slate-500 hover:text-emerald-600 transition-colors">Tim Pengembang</a>
+                <a href="#faq" className="text-sm text-slate-500 hover:text-emerald-600 transition-colors">Pusat Bantuan (FAQ)</a>
+              </div>
+              
+              <div className="flex flex-col gap-4">
+                <h4 className="font-bold text-slate-900 mb-1">Sumber Daya (PBL)</h4>
+                <a href="https://github.com/Maulanahb/Lapangku" target="_blank" rel="noopener noreferrer" className="text-sm text-slate-500 hover:text-emerald-600 transition-colors">Repositori GitHub</a>
+              </div>
+            </div>
+          </div>
+          
+          <div className="pt-8 border-t border-slate-200/60 flex flex-col md:flex-row items-center justify-between gap-4">
+            <p className="text-sm text-slate-400">
+              &copy; {new Date().getFullYear()} Lapangku. Dirancang untuk Project Based Learning.
+            </p>
+            <div className="flex items-center gap-2">
+              <span className="flex items-center gap-1 text-sm text-slate-500">
+                Dibuat dengan <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500" /> di Indonesia
+              </span>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}
