@@ -122,16 +122,17 @@ export default function App() {
   useEffect(() => {
     const sections = ['beranda', 'tentang', 'fitur', 'tim', 'faq'];
     const handleScroll = () => {
+      let current = 'beranda';
       for (const id of sections) {
         const el = document.getElementById(id);
         if (el) {
           const rect = el.getBoundingClientRect();
-          if (rect.top <= 150 && rect.bottom >= 150) {
-            setActiveNav(id);
-            break;
+          if (rect.top <= window.innerHeight / 3) {
+            current = id;
           }
         }
       }
+      setActiveNav(current);
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
@@ -196,16 +197,13 @@ export default function App() {
       </div>
 
       {/* ═══ Navbar ═══ */}
-      <motion.div 
-        className="fixed top-0 inset-x-0 z-50 px-4 sm:px-6 lg:px-8"
-        animate={{ paddingTop: isScrolled ? '8px' : '16px' }}
-        transition={{ duration: 0.3 }}
-      >
-        <header className={`max-w-7xl mx-auto backdrop-blur-xl rounded-2xl px-6 py-3 md:py-3.5 flex justify-between items-center transition-all duration-500 border ${
+      <div className="fixed top-0 inset-x-0 z-50">
+        <header className={`w-full transition-all duration-500 ${
           isScrolled 
-            ? 'bg-white/90 shadow-xl shadow-slate-900/[0.05] border-slate-200/80 translate-y-1' 
-            : 'bg-white/70 shadow-md shadow-slate-900/[0.02] border-slate-200/40'
+            ? 'premium-glass border-b border-slate-200/60 shadow-sm py-3 md:py-3.5' 
+            : 'bg-white/40 backdrop-blur-md border-b border-slate-200/20 py-4 md:py-5'
         }`}>
+          <div className="max-w-7xl mx-auto px-6 lg:px-8 flex justify-between items-center">
           <div className="flex items-center gap-2.5 lg:gap-3">
             <div className="bg-brand-primary p-2 rounded-xl text-white shadow-md shadow-brand-primary/20 flex-shrink-0">
               <Smartphone className="w-5 h-5 lg:w-5 lg:h-5" />
@@ -248,6 +246,7 @@ export default function App() {
           >
             {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
+          </div>
         </header>
 
         {/* Mobile Dropdown */}
@@ -282,7 +281,7 @@ export default function App() {
             </motion.div>
           )}
         </AnimatePresence>
-      </motion.div>
+      </div>
 
       {/* ═══ Main Content ═══ */}
       <main className="max-w-7xl mx-auto w-full pt-32 lg:pt-40 pb-16 px-4 sm:px-6 lg:px-8">
@@ -308,7 +307,7 @@ export default function App() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.1 }}
-                className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-extrabold leading-[1.08] tracking-tight text-slate-900 mb-6"
+                className="font-condensed uppercase text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-extrabold leading-[1.05] tracking-tight text-slate-900 mb-6"
               >
                 Booking Lapangan{' '}
                 <br className="hidden md:block"/>
@@ -427,7 +426,7 @@ export default function App() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: i * 0.1 }}
-                className="bg-white/70 backdrop-blur-sm border border-slate-200/50 rounded-3xl p-6 sm:p-8 text-center hover:shadow-lg hover:bg-white hover:border-slate-200 transition-all duration-500 group"
+                className="premium-glass rounded-3xl p-6 sm:p-8 text-center hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 group"
               >
                 <div className="w-12 h-12 mx-auto bg-emerald-50 text-emerald-500 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
                   <stat.icon className="w-5 h-5" />
@@ -568,7 +567,7 @@ export default function App() {
                 <>
                   <motion.div 
                     initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }}
-                    className="md:col-span-2 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-[28px] p-8 md:p-10 text-white hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 relative overflow-hidden group"
+                    className="md:col-span-2 premium-glass-dark rounded-[28px] p-8 md:p-10 text-white hover:-translate-y-1 transition-all duration-500 relative overflow-hidden group"
                   >
                      <div className="absolute top-0 right-0 w-72 h-72 bg-emerald-500/8 rounded-full blur-3xl group-hover:bg-emerald-500/15 group-hover:scale-125 transition-all duration-700"></div>
                      <div className="relative z-10">
@@ -602,7 +601,7 @@ export default function App() {
                   </motion.div>
 
                   <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.15 }}
-                    className="bg-white rounded-[28px] p-8 border border-slate-100/80 hover:shadow-xl hover:-translate-y-1 transition-all duration-500 group shadow-sm flex flex-col justify-between"
+                    className="premium-glass rounded-[28px] p-8 hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 group flex flex-col justify-between"
                   >
                     <div>
                       <div className="w-11 h-11 bg-sky-50 text-sky-500 rounded-xl flex items-center justify-center mb-5 border border-sky-100 shadow-sm group-hover:scale-110 transition-transform duration-300">
@@ -628,7 +627,7 @@ export default function App() {
 
                   {/* ═══ Role-based Features (Fitur Kita) ═══ */}
                   <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.25 }}
-                    className="bg-white rounded-[28px] p-8 border border-slate-100/80 hover:shadow-xl hover:-translate-y-1 transition-all duration-500 group shadow-sm flex flex-col justify-between"
+                    className="premium-glass rounded-[28px] p-8 hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 group flex flex-col justify-between"
                   >
                     <div>
                       <div className="w-11 h-11 bg-blue-50 text-blue-500 rounded-xl flex items-center justify-center mb-5 border border-blue-100 shadow-sm group-hover:scale-110 transition-transform duration-300">
@@ -640,7 +639,7 @@ export default function App() {
                   </motion.div>
 
                   <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.3 }}
-                    className="bg-white rounded-[28px] p-8 border border-slate-100/80 hover:shadow-xl hover:-translate-y-1 transition-all duration-500 group shadow-sm flex flex-col justify-between"
+                    className="premium-glass rounded-[28px] p-8 hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 group flex flex-col justify-between"
                   >
                     <div>
                       <div className="w-11 h-11 bg-amber-50 text-amber-500 rounded-xl flex items-center justify-center mb-5 border border-amber-100 shadow-sm group-hover:scale-110 transition-transform duration-300">
@@ -652,7 +651,7 @@ export default function App() {
                   </motion.div>
 
                   <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.35 }}
-                    className="bg-white rounded-[28px] p-8 border border-slate-100/80 hover:shadow-xl hover:-translate-y-1 transition-all duration-500 group shadow-sm flex flex-col justify-between"
+                    className="premium-glass rounded-[28px] p-8 hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 group flex flex-col justify-between"
                   >
                     <div>
                       <div className="w-11 h-11 bg-purple-50 text-purple-500 rounded-xl flex items-center justify-center mb-5 border border-purple-100 shadow-sm group-hover:scale-110 transition-transform duration-300">
