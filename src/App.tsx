@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Download, Github, MapPin, CalendarClock, ShieldCheck, Menu, X, Smartphone, ArrowRight, Activity, Search, CreditCard, Trophy, Users, CheckCircle2, PlayCircle, Dribbble, ChevronDown, QrCode, Server, Code, Star, Zap, Clock, Upload, Eye, UserCircle, Store, Shield, ArrowLeft, Heart, Plus, Bell, RefreshCw, Check, TrendingUp, Image } from 'lucide-react';
+import { Smartphone, Play, Download, ChevronRight, Menu, X, Users, CheckCircle2, ChevronDown, Github, QrCode, Database, MapPin, CreditCard, Globe, Zap, ArrowRight, Activity, Search, Trophy, Dribbble, Clock, Upload, Eye, UserCircle, Store, Shield, ArrowLeft, Heart, Plus, Bell, RefreshCw, Check, TrendingUp, Image } from 'lucide-react';
 import { motion, AnimatePresence, useScroll, useMotionValueEvent } from 'motion/react';
 import MobileAppDemo from './components/MobileAppDemo';
 import InteractiveDemo from './components/InteractiveDemo';
@@ -379,7 +379,7 @@ export default function App() {
                   className="absolute top-24 -right-4 lg:-right-8 bg-white/95 backdrop-blur-xl p-3.5 rounded-2xl shadow-xl shadow-slate-900/[0.08] border border-slate-100/80 z-30 flex items-center gap-3 w-max pointer-events-none"
                 >
                    <div className="w-10 h-10 bg-[#E8F5EC] rounded-xl flex items-center justify-center text-[#1B6B3A]">
-                      <Star className="w-5 h-5 fill-[#1B6B3A] text-[#1B6B3A]"/>
+                      <CheckCircle2 className="w-5 h-5 fill-[#1B6B3A] text-[#1B6B3A]"/>
                    </div>
                    <div className="pr-1 text-left">
                       <div className="text-[11px] text-slate-400 font-medium mb-0.5">Rating Aplikasi</div>
@@ -587,7 +587,7 @@ export default function App() {
                   >
                     <div>
                       <div className="w-11 h-11 bg-sky-50 text-sky-500 rounded-xl flex items-center justify-center mb-5 border border-sky-100 shadow-sm group-hover:scale-110 transition-transform duration-300">
-                         <CalendarClock className="w-5 h-5" />
+                         <Clock className="w-5 h-5" />
                       </div>
                       <h3 className="text-xl font-bold text-slate-900 mb-2.5 tracking-tight">Jadwal Real-time</h3>
                       <p className="text-slate-500 leading-relaxed text-sm">Jadwal tersinkronisasi via Cloud Firestore untuk mencegah double booking. Cek ketersediaan tanpa ragu.</p>
@@ -665,7 +665,7 @@ export default function App() {
            </motion.div>
            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
               {[
-                { name: "Futsal", icon: PlayCircle, color: "group-hover:bg-emerald-50 group-hover:text-emerald-500 group-hover:border-emerald-200" },
+                { name: "Futsal", icon: Play, color: "group-hover:bg-emerald-50 group-hover:text-emerald-500 group-hover:border-emerald-200" },
                 { name: "Badminton", icon: Trophy, color: "group-hover:bg-sky-50 group-hover:text-sky-500 group-hover:border-sky-200" },
                 { name: "Basket", icon: Dribbble, color: "group-hover:bg-orange-50 group-hover:text-orange-500 group-hover:border-orange-200" },
                 { name: "Tennis", icon: Activity, color: "group-hover:bg-violet-50 group-hover:text-violet-500 group-hover:border-violet-200" }
@@ -710,7 +710,7 @@ export default function App() {
               
               {[
                 { title: "Cari Lapangan", desc: "Pilih fasilitas terdekat dan tentukan jenis olahraga.", icon: Search },
-                { title: "Pilih Jadwal", desc: "Tentukan hari dan jam sesuai ketersediaan real-time.", icon: CalendarClock },
+                { title: "Pilih Jadwal", desc: "Tentukan hari dan jam sesuai ketersediaan real-time.", icon: Clock },
                 { title: "Pembayaran", desc: "Transfer ke rekening Mitra lalu upload bukti bayar di aplikasi.", icon: CreditCard },
                 { title: "Mulai Main", desc: "Setelah Mitra konfirmasi, tunjukkan bukti booking dan langsung main!", icon: CheckCircle2 }
               ].map((step, i) => (
@@ -736,35 +736,47 @@ export default function App() {
         </div>
 
         {/* ═══ Tech Showcase Section ═══ */}
-        <div className="pt-4 pb-20">
+        <div className="pt-8 pb-20">
           <motion.div 
              initial={{ opacity: 0, y: 20 }}
              whileInView={{ opacity: 1, y: 0 }}
              viewport={{ once: true }}
-             transition={{ duration: 0.5 }}
-             className="text-center max-w-3xl mx-auto"
+             transition={{ duration: 0.6 }}
+             className="text-center"
           >
-             <p className="text-slate-400 font-bold mb-6 uppercase tracking-widest text-xs">Dibangun Menggunakan Teknologi Modern</p>
-             <div className="flex flex-col sm:flex-row justify-center items-center gap-5 border border-slate-200/50 w-fit mx-auto px-8 sm:px-10 py-6 sm:py-7 rounded-3xl bg-white/70 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-300">
-                <div className="flex items-center gap-3">
-                   <div className="w-11 h-11 rounded-xl bg-sky-50 flex items-center justify-center text-sky-500 border border-sky-100">
-                     <Smartphone className="w-5 h-5" />
+             <p className="text-slate-400 font-bold mb-8 uppercase tracking-widest text-xs">DIDUKUNG OLEH EKOSISTEM TEKNOLOGI MODERN</p>
+             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-5xl mx-auto">
+                {/* Tech 1 */}
+                <div className="premium-glass p-5 rounded-3xl flex flex-col items-center sm:items-start text-center sm:text-left hover:-translate-y-1 hover:shadow-xl transition-all duration-300 group">
+                   <div className="w-12 h-12 rounded-2xl bg-sky-50 flex items-center justify-center text-sky-500 border border-sky-100 mb-4 group-hover:scale-110 transition-transform">
+                     <Smartphone className="w-6 h-6" />
                    </div>
-                   <div className="text-left">
-                     <div className="font-bold text-slate-800 leading-none mb-1">Flutter</div>
-                     <div className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Mobile UI Framework</div>
-                   </div>
+                   <div className="font-extrabold text-slate-800 text-lg mb-1">Flutter</div>
+                   <div className="text-xs text-slate-500 font-medium">Cross-platform UI App</div>
                 </div>
-                <div className="w-px h-10 bg-slate-200 hidden sm:block"></div>
-                <div className="h-px w-full bg-slate-200 block sm:hidden"></div>
-                <div className="flex items-center gap-3">
-                   <div className="w-11 h-11 rounded-xl bg-amber-50 flex items-center justify-center text-amber-500 border border-amber-100">
-                     <Server className="w-5 h-5" />
+                {/* Tech 2 */}
+                <div className="premium-glass p-5 rounded-3xl flex flex-col items-center sm:items-start text-center sm:text-left hover:-translate-y-1 hover:shadow-xl transition-all duration-300 group">
+                   <div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-500 border border-amber-100 mb-4 group-hover:scale-110 transition-transform">
+                     <Database className="w-6 h-6" />
                    </div>
-                   <div className="text-left">
-                     <div className="font-bold text-slate-800 leading-none mb-1">Firebase</div>
-                     <div className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Backend & Cloud Functions</div>
+                   <div className="font-extrabold text-slate-800 text-lg mb-1">Firebase</div>
+                   <div className="text-xs text-slate-500 font-medium">NoSQL & Realtime Auth</div>
+                </div>
+                {/* Tech 3 */}
+                <div className="premium-glass p-5 rounded-3xl flex flex-col items-center sm:items-start text-center sm:text-left hover:-translate-y-1 hover:shadow-xl transition-all duration-300 group">
+                   <div className="w-12 h-12 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-500 border border-emerald-100 mb-4 group-hover:scale-110 transition-transform">
+                     <MapPin className="w-6 h-6" />
                    </div>
+                   <div className="font-extrabold text-slate-800 text-lg mb-1">Maps API</div>
+                   <div className="text-xs text-slate-500 font-medium">Geolokasi & Rute GOR</div>
+                </div>
+                {/* Tech 4 */}
+                <div className="premium-glass p-5 rounded-3xl flex flex-col items-center sm:items-start text-center sm:text-left hover:-translate-y-1 hover:shadow-xl transition-all duration-300 group">
+                   <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-500 border border-indigo-100 mb-4 group-hover:scale-110 transition-transform">
+                     <CreditCard className="w-6 h-6" />
+                   </div>
+                   <div className="font-extrabold text-slate-800 text-lg mb-1">Midtrans</div>
+                   <div className="text-xs text-slate-500 font-medium">Payment Gateway Lokal</div>
                 </div>
              </div>
           </motion.div>
