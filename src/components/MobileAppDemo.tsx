@@ -87,19 +87,31 @@ export default function MobileAppDemo({
   // Handle overrides from parent
   useEffect(() => {
     if (customerScreenOverride !== undefined) {
-      setCustomerScreen(customerScreenOverride);
+      setCustomerScreen(prev => {
+        if (prev !== customerScreenOverride) setDirection(customerScreenOverride > prev ? 1 : -1);
+        return customerScreenOverride;
+      });
+      setIsAutoplay(false);
     }
   }, [customerScreenOverride]);
 
   useEffect(() => {
     if (mitraScreenOverride !== undefined) {
-      setMitraScreen(mitraScreenOverride);
+      setMitraScreen(prev => {
+        if (prev !== mitraScreenOverride) setDirection(mitraScreenOverride > prev ? 1 : -1);
+        return mitraScreenOverride;
+      });
+      setIsAutoplay(false);
     }
   }, [mitraScreenOverride]);
 
   useEffect(() => {
     if (scanScreenOverride !== undefined) {
-      setScanScreen(scanScreenOverride);
+      setScanScreen(prev => {
+        if (prev !== scanScreenOverride) setDirection(scanScreenOverride > prev ? 1 : -1);
+        return scanScreenOverride;
+      });
+      setIsAutoplay(false);
     }
   }, [scanScreenOverride]);
 

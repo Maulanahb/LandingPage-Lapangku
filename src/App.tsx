@@ -91,7 +91,6 @@ export default function App() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
-  const [showQR, setShowQR] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeNav, setActiveNav] = useState('beranda');
   const [activeProblemSlide, setActiveProblemSlide] = useState(0);
@@ -334,28 +333,11 @@ export default function App() {
               >
                  <div className="relative w-full sm:w-auto">
                    <button 
-                     onMouseEnter={() => setShowQR(true)}
-                     onMouseLeave={() => setShowQR(false)}
                      className="w-full flex items-center justify-center gap-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-bold px-8 py-4 rounded-full shadow-xl shadow-emerald-500/25 hover:shadow-emerald-500/40 transition-all duration-300 hover:scale-[1.03] active:scale-[0.97]"
                    >
                       <Download className="w-5 h-5" />
                       Download Aplikasi
                    </button>
-                   <AnimatePresence>
-                     {showQR && (
-                       <motion.div 
-                         initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                         animate={{ opacity: 1, y: 0, scale: 1 }}
-                         exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                         className="absolute top-full left-1/2 -translate-x-1/2 mt-4 bg-white p-5 rounded-2xl shadow-2xl shadow-slate-900/10 border border-slate-100 z-50 flex flex-col items-center gap-3 w-52 pointer-events-none"
-                       >
-                         <div className="w-36 h-36 bg-gradient-to-br from-slate-50 to-emerald-50 rounded-xl flex items-center justify-center border-2 border-dashed border-emerald-200 text-emerald-400">
-                           <QrCode className="w-14 h-14" />
-                         </div>
-                         <span className="text-[11px] font-bold text-slate-500 text-center uppercase tracking-wider">Scan Untuk Mengunduh</span>
-                       </motion.div>
-                     )}
-                   </AnimatePresence>
                  </div>
                  <a href="https://github.com/Maulanahb/Lapangku" target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto flex items-center justify-center gap-2.5 bg-white hover:bg-slate-50 text-slate-700 font-bold px-8 py-4 rounded-full shadow-sm border border-slate-200/80 hover:border-slate-300 hover:shadow-md transition-all duration-300 hover:scale-[1.03] active:scale-[0.97]">
                     <Github className="w-5 h-5" />
