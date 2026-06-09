@@ -1,8 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Smartphone, Play, Download, ChevronRight, Menu, X, Users, CheckCircle2, ChevronDown, Github, QrCode, Database, MapPin, CreditCard, Globe, Zap, ArrowRight, Activity, Search, Trophy, Dribbble, Clock, Upload, Eye, UserCircle, Store, Shield, ArrowLeft, Heart, Plus, Bell, RefreshCw, Check, TrendingUp, Image } from 'lucide-react';
+import { Smartphone, Play, Download, ChevronRight, Menu, X, Users, CheckCircle2, ChevronDown, Github, QrCode, Database, MapPin, CreditCard, Globe, Zap, Activity, Search, Trophy, Dribbble, Clock, Eye, UserCircle, Store, Shield, ArrowLeft, Heart, Plus, Bell, RefreshCw, Check, TrendingUp, Image } from 'lucide-react';
 import { motion, AnimatePresence, useScroll, useMotionValueEvent } from 'motion/react';
 import MobileAppDemo from './components/MobileAppDemo';
 import InteractiveDemo from './components/InteractiveDemo';
+import maulanaPhoto from '../image/MAULANA_AHMAD_BUKHORI-removebg-preview.png';
+import maksumPhoto from '../image/AHMAD_ALFI_MAKSUM-removebg-preview.png';
+import arsyaPhoto from '../image/ARSYA_FIKR_SI-removebg-preview.png';
+import logoApp from '../image/logoApp.png';
 
 // ─── Typewriter Hook ─────────────────────────────────────────────
 function useTypewriter(words: string[], typingSpeed = 100, deletingSpeed = 60, pauseDuration = 2000) {
@@ -144,11 +148,11 @@ export default function App() {
   };
 
   const faqs = [
-    { q: "Bagaimana cara melakukan pembayaran di Lapangku?", a: "Setelah memilih jadwal dan mengonfirmasi booking, Anda akan diarahkan ke halaman pembayaran. Lakukan transfer ke rekening yang tertera, lalu upload bukti pembayaran melalui aplikasi. Tim pengelola lapangan (Mitra) akan memverifikasi bukti pembayaran Anda, dan status booking akan berubah menjadi 'Dikonfirmasi' setelah disetujui." },
+    { q: "Bagaimana cara melakukan pembayaran di Lapangku?", a: "Setelah memilih jadwal dan mengonfirmasi booking, Anda akan diarahkan ke halaman pembayaran Midtrans. Pilih metode pembayaran yang tersedia, selesaikan transaksi, lalu sistem akan memperbarui status booking secara otomatis setelah pembayaran berhasil." },
     { q: "Bagaimana cara membatalkan jadwal lapangan yang sudah dipesan?", a: "Pembatalan dapat dilakukan langsung dari aplikasi. Buka menu 'Pesanan Saya', pilih tiket booking yang aktif, lalu tekan tombol 'Batalkan Pesanan'. Sistem akan otomatis memperbarui status pesanan Anda dan mengembalikan slot jadwal tersebut agar bisa dipesan oleh pengguna lain." },
-    { q: "Bagaimana prosedur pengembalian dana (refund) jika saya batal main?", a: "Karena pembayaran dilakukan secara manual via transfer bank, proses refund akan dikoordinasikan langsung antara Anda dan pihak pengelola lapangan (Mitra). Anda bisa menghubungi pengelola melalui fitur 'Hubungi CS' di aplikasi untuk mengatur pengembalian dana." },
+    { q: "Bagaimana prosedur pengembalian dana (refund) jika saya batal main?", a: "Refund mengikuti kebijakan pengelola lapangan dan metode pembayaran yang digunakan. Anda bisa menghubungi pengelola melalui fitur 'Hubungi CS' di aplikasi untuk proses bantuan dan tindak lanjut pengembalian dana." },
     { q: "Apakah jadwal lapangan yang tampil di aplikasi selalu akurat dan real-time?", a: "Ya! Salah satu keunggulan utama Lapangku adalah sinkronisasi jadwal secara real-time melalui Firebase Cloud Firestore. Begitu ada pengguna yang menyelesaikan booking, slot waktu tersebut akan otomatis terkunci untuk mencegah terjadinya double booking atau jadwal bentrok." },
-    { q: "Apa perbedaan akun Customer, Mitra, dan Admin di Lapangku?", a: "Lapangku memiliki tiga peran pengguna: Customer dapat mencari dan memesan lapangan; Mitra adalah pengelola lapangan yang bisa mengelola jadwal, memverifikasi pembayaran, serta melihat laporan pendapatan; Admin bertugas mengawasi seluruh sistem termasuk verifikasi akun Mitra dan monitoring aktivitas platform." }
+    { q: "Apa perbedaan akun Customer, Mitra, dan Admin di Lapangku?", a: "Lapangku memiliki tiga peran pengguna: Customer dapat mencari dan memesan lapangan; Mitra adalah pengelola lapangan yang bisa mengelola jadwal, memantau pesanan masuk, serta melihat laporan pendapatan; Admin bertugas mengawasi seluruh sistem termasuk verifikasi akun Mitra dan monitoring aktivitas platform." }
   ];
 
   const handleScrollTo = (e: React.MouseEvent<HTMLAnchorElement>, targetId: string) => {
@@ -204,8 +208,8 @@ export default function App() {
         }`}>
           <div className="max-w-7xl mx-auto px-6 lg:px-8 flex justify-between items-center">
           <div className="flex items-center gap-2.5 lg:gap-3">
-            <div className="bg-brand-primary p-2 rounded-xl text-white shadow-md shadow-brand-primary/20 flex-shrink-0">
-              <Smartphone className="w-5 h-5 lg:w-5 lg:h-5" />
+            <div className="h-9 w-9 overflow-hidden rounded-xl bg-brand-primary shadow-md shadow-brand-primary/20 ring-1 ring-white/70 flex-shrink-0">
+              <img src={logoApp} alt="Logo Lapangku" className="h-full w-full object-cover" />
             </div>
             <span className="font-extrabold text-xl lg:text-[22px] tracking-tight text-slate-900">Lapangku<span className="text-brand-primary">.</span></span>
           </div>
@@ -353,7 +357,7 @@ export default function App() {
               <MobileAppDemo />
 
               {/* ═══ Floating Notification Card ═══ */}
-              {!isLoading && (
+              {false && !isLoading && (
                 <motion.div 
                   initial={{ opacity: 0, x: -20, scale: 0.8 }}
                   animate={{ opacity: 1, x: 0, scale: 1, y: [0, 8, 0] }} 
@@ -364,14 +368,14 @@ export default function App() {
                       <CheckCircle2 className="w-5 h-5 sm:w-5 sm:h-5"/>
                    </div>
                    <div className="pr-1 text-left">
-                      <div className="text-[11px] sm:text-[12px] text-slate-400 font-medium mb-0.5">Booking Dikonfirmasi ✓</div>
+                      <div className="text-[11px] sm:text-[12px] text-slate-400 font-medium mb-0.5">Booking Aktif ✓</div>
                       <div className="text-[13px] sm:text-[14px] font-bold text-slate-800">Lapangan Futsal A</div>
                    </div>
                 </motion.div>
               )}
 
               {/* ═══ Floating Stats Card ═══ */}
-              {!isLoading && (
+              {false && !isLoading && (
                 <motion.div 
                   initial={{ opacity: 0, x: 20, scale: 0.8 }}
                   animate={{ opacity: 1, x: 0, scale: 1, y: [0, -6, 0] }} 
@@ -463,16 +467,16 @@ export default function App() {
                           className="absolute inset-6"
                         >
                           <div className="flex items-center gap-2 mb-5 border-b border-white/10 pb-4">
-                             <div className="w-8 h-8 rounded-full bg-rose-500/15 flex items-center justify-center">
-                               <X className="w-4 h-4 text-rose-400" />
+                             <div className="w-8 h-8 rounded-full bg-slate-200/70 flex items-center justify-center">
+                               <X className="w-4 h-4 text-slate-500" />
                              </div>
                              <span className="text-white/90 font-semibold text-sm">Masalah yang Ditemui</span>
                           </div>
                           <ul className="space-y-4">
                             {["Informasi jadwal tidak terpusat", "Risiko bentrok jadwal sangat tinggi", "Metode reservasi masih konvensional"].map((issue, i) => (
                               <li key={i} className="flex items-start gap-3">
-                                <div className="w-5 h-5 rounded-full bg-rose-500/15 flex items-center justify-center flex-shrink-0 mt-0.5">
-                                  <X className="w-3 h-3 text-rose-400" />
+                                <div className="w-5 h-5 rounded-full bg-slate-200/70 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                  <X className="w-3 h-3 text-slate-500" />
                                 </div>
                                 <span className="text-emerald-50/80 text-sm leading-relaxed">{issue}</span>
                               </li>
@@ -510,7 +514,7 @@ export default function App() {
                     
                     {/* Slide Indicators */}
                     <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-1.5">
-                      <div className={`h-1.5 rounded-full transition-all duration-300 ${activeProblemSlide === 0 ? 'w-4 bg-rose-400' : 'w-1.5 bg-white/20'}`}></div>
+                      <div className={`h-1.5 rounded-full transition-all duration-300 ${activeProblemSlide === 0 ? 'w-4 bg-slate-400' : 'w-1.5 bg-white/20'}`}></div>
                       <div className={`h-1.5 rounded-full transition-all duration-300 ${activeProblemSlide === 1 ? 'w-4 bg-emerald-400' : 'w-1.5 bg-white/20'}`}></div>
                     </div>
                  </div>
@@ -600,10 +604,10 @@ export default function App() {
                     <div className="absolute top-1/2 right-0 -translate-y-1/2 w-56 h-56 bg-white/[0.07] rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
                     <div className="relative z-10 flex flex-col justify-center h-full">
                        <div className="w-11 h-11 bg-white/20 backdrop-blur-md text-white rounded-xl flex items-center justify-center mb-5 shadow-sm group-hover:scale-110 transition-transform duration-300">
-                          <Upload className="w-5 h-5" />
+                          <CreditCard className="w-5 h-5" />
                        </div>
-                       <h3 className="text-2xl md:text-3xl font-extrabold mb-2.5 tracking-tight">Konfirmasi Pembayaran</h3>
-                       <p className="text-emerald-50/90 text-sm md:text-base leading-relaxed max-w-md">Upload bukti pembayaran langsung dari aplikasi. Mitra memverifikasi transaksi Anda dengan cepat dan aman melalui sistem konfirmasi digital.</p>
+                       <h3 className="text-2xl md:text-3xl font-extrabold mb-2.5 tracking-tight">Pembayaran Otomatis</h3>
+                       <p className="text-emerald-50/90 text-sm md:text-base leading-relaxed max-w-md">Terhubung dengan Midtrans untuk memproses pembayaran digital. Status booking diperbarui otomatis setelah transaksi berhasil.</p>
                     </div>
                   </motion.div>
 
@@ -628,7 +632,7 @@ export default function App() {
                          <Store className="w-5 h-5" />
                       </div>
                       <h3 className="text-xl font-bold text-slate-900 mb-2.5 tracking-tight">Untuk Mitra</h3>
-                      <p className="text-slate-500 leading-relaxed text-sm">Kelola operasional lapangan, verifikasi bukti pembayaran, dan pantau laporan pendapatan secara real-time.</p>
+                      <p className="text-slate-500 leading-relaxed text-sm">Kelola operasional lapangan, pantau pesanan berbayar, dan lihat laporan pendapatan secara real-time.</p>
                     </div>
                   </motion.div>
 
@@ -665,10 +669,22 @@ export default function App() {
            </motion.div>
            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
               {[
-                { name: "Futsal", icon: Play, color: "group-hover:bg-emerald-50 group-hover:text-emerald-500 group-hover:border-emerald-200" },
-                { name: "Badminton", icon: Trophy, color: "group-hover:bg-sky-50 group-hover:text-sky-500 group-hover:border-sky-200" },
-                { name: "Basket", icon: Dribbble, color: "group-hover:bg-orange-50 group-hover:text-orange-500 group-hover:border-orange-200" },
-                { name: "Tennis", icon: Activity, color: "group-hover:bg-violet-50 group-hover:text-violet-500 group-hover:border-violet-200" }
+                {
+                  name: "Futsal",
+                  image: "https://images.unsplash.com/photo-1575361204480-aadea25e6e68?auto=format&fit=crop&q=80&w=600"
+                },
+                {
+                  name: "Badminton",
+                  image: "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?auto=format&fit=crop&q=80&w=600"
+                },
+                {
+                  name: "Basket",
+                  image: "https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&q=80&w=600"
+                },
+                {
+                  name: "Tennis",
+                  image: "https://images.unsplash.com/photo-1622279457486-62dcc4a431d6?auto=format&fit=crop&q=80&w=600"
+                }
               ].map((sport, i) => (
                 <motion.div 
                   key={i}
@@ -676,12 +692,17 @@ export default function App() {
                   whileInView={{ opacity: 1, scale: 1 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.4, delay: i * 0.1 }}
-                  className="flex flex-col items-center justify-center p-6 sm:p-8 bg-white/70 backdrop-blur-sm border border-slate-200/50 rounded-3xl hover:shadow-xl hover:bg-white transition-all duration-500 group cursor-pointer hover:-translate-y-1"
+                  className="group relative min-h-[190px] overflow-hidden rounded-[28px] border border-white/80 bg-slate-900 shadow-sm shadow-slate-200/70 transition-all duration-500 hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-emerald-100/70"
                 >
-                   <div className={`w-16 h-16 sm:w-20 sm:h-20 bg-slate-50 text-slate-400 rounded-2xl flex items-center justify-center mb-4 border border-slate-100 transition-all duration-300 ${sport.color}`}>
-                      <sport.icon className="w-7 h-7 sm:w-9 sm:h-9" />
+                   <img
+                     src={sport.image}
+                     alt={`Lapangan ${sport.name}`}
+                     className="absolute inset-0 h-full w-full object-cover opacity-80 transition-transform duration-700 group-hover:scale-110"
+                   />
+                   <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-900/25 to-slate-950/10"></div>
+                   <div className="absolute inset-x-0 bottom-0 p-5 text-left">
+                     <h4 className="text-lg font-extrabold text-white">{sport.name}</h4>
                    </div>
-                   <span className="font-bold text-slate-700 group-hover:text-slate-900 text-sm sm:text-base">{sport.name}</span>
                 </motion.div>
               ))}
            </div>
@@ -711,8 +732,8 @@ export default function App() {
               {[
                 { title: "Cari Lapangan", desc: "Pilih fasilitas terdekat dan tentukan jenis olahraga.", icon: Search },
                 { title: "Pilih Jadwal", desc: "Tentukan hari dan jam sesuai ketersediaan real-time.", icon: Clock },
-                { title: "Pembayaran", desc: "Transfer ke rekening Mitra lalu upload bukti bayar di aplikasi.", icon: CreditCard },
-                { title: "Mulai Main", desc: "Setelah Mitra konfirmasi, tunjukkan bukti booking dan langsung main!", icon: CheckCircle2 }
+                { title: "Pembayaran", desc: "Bayar melalui payment gateway dengan metode yang tersedia.", icon: CreditCard },
+                { title: "Mulai Main", desc: "Setelah pembayaran berhasil, tunjukkan e-tiket dan langsung main!", icon: CheckCircle2 }
               ].map((step, i) => (
                 <motion.div 
                   key={i}
@@ -804,10 +825,10 @@ export default function App() {
            
            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 lg:gap-6 mb-20">
               {[
-                { name: "Maulana", role: "PM & Fullstack Customer", initial: "M", gradient: "from-blue-500 to-indigo-500" },
-                { name: "Maksum", role: "UI/UX Designer", initial: "MK", gradient: "from-violet-500 to-purple-500" },
-                { name: "Galuh", role: "Fullstack Admin", initial: "G", gradient: "from-amber-500 to-orange-500" },
-                { name: "Arsya", role: "Fullstack Mitra", initial: "A", gradient: "from-emerald-500 to-teal-500" }
+                { name: "Maulana Ahmad B.", role: "Customer App Lead", initial: "M", photo: maulanaPhoto, photoClass: "right-[-10px] h-[168px]" },
+                { name: "Ahmad Alfi Maksum", role: "Product Designer", initial: "MK", photo: maksumPhoto, photoClass: "right-[-8px] h-[170px]" },
+                { name: "Galuh", role: "Admin Panel Dev", initial: "G" },
+                { name: "Arsya Fikri F.", role: "Mitra Dashboard Dev", initial: "A", photo: arsyaPhoto, photoClass: "right-[-22px] h-[158px]" }
               ].map((member, i) => (
                 <motion.div 
                   key={i}
@@ -815,13 +836,34 @@ export default function App() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.5, delay: i * 0.1 }}
-                  className="bg-white/70 backdrop-blur-sm rounded-[28px] p-6 sm:p-7 text-center border border-slate-200/50 hover:shadow-xl hover:bg-white transition-all duration-500 hover:-translate-y-1.5 group"
+                  className="group relative min-h-[190px] overflow-hidden rounded-[26px] border border-slate-200/70 bg-white p-6 text-left shadow-sm shadow-slate-200/60 transition-all duration-500 hover:-translate-y-1.5 hover:border-teal-200 hover:shadow-xl hover:shadow-teal-100/60"
                 >
-                  <div className={`w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br ${member.gradient} flex items-center justify-center text-xl font-bold mb-5 text-white shadow-lg group-hover:scale-110 group-hover:rounded-3xl transition-all duration-300`}>
-                     {member.initial}
+                  <div className="absolute inset-0 bg-gradient-to-br from-white via-white to-slate-50"></div>
+                  <div className="absolute inset-y-0 right-0 w-28 bg-gradient-to-br from-teal-50 via-emerald-50 to-cyan-50"></div>
+                  <div className="absolute bottom-0 left-0 h-1 w-full bg-gradient-to-r from-teal-500 via-emerald-500 to-cyan-500 opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
+                  <div className="relative z-10 flex h-full min-h-[142px] flex-col justify-between">
+                    <div className="inline-flex w-fit rounded-full border border-teal-100 bg-white/85 px-3 py-1 text-[11px] font-bold text-teal-700 shadow-sm">
+                      {String(i + 1).padStart(2, '0')}
+                    </div>
+                    <div className="max-w-[150px]">
+                      <h4 className="mb-2 text-[17px] font-extrabold leading-tight text-slate-900">{member.name}</h4>
+                      <span className="inline-flex rounded-full border border-slate-200 bg-white/85 px-3 py-1 text-[12px] font-bold leading-tight text-slate-600 shadow-sm">
+                        {member.role}
+                      </span>
+                    </div>
                   </div>
-                  <h4 className="font-extrabold text-slate-900 text-lg mb-1">{member.name}</h4>
-                  <span className="text-emerald-600 text-sm font-semibold">{member.role}</span>
+                  {member.photo ? (
+                    <img
+                      src={member.photo}
+                      alt={`Foto ${member.name}`}
+                      className={`absolute bottom-0 z-0 w-auto object-contain object-bottom drop-shadow-xl transition-transform duration-500 group-hover:scale-[1.04] ${member.photoClass}`}
+                    />
+                  ) : (
+                    <div className="absolute bottom-5 right-5 z-0 flex h-24 w-24 items-center justify-center rounded-full border border-emerald-100 bg-white text-3xl font-extrabold text-emerald-600 shadow-lg shadow-slate-200/70">
+                      <UserCircle className="absolute h-16 w-16 text-emerald-100" />
+                      <span className="relative">{member.initial}</span>
+                    </div>
+                  )}
                 </motion.div>
               ))}
            </div>
@@ -930,8 +972,8 @@ export default function App() {
             {/* Brand Column */}
             <div className="lg:col-span-4 flex flex-col gap-6">
               <div className="flex items-center gap-2.5">
-                <div className="bg-gradient-to-br from-emerald-500 to-teal-500 p-2.5 rounded-xl text-white shadow-lg shadow-emerald-500/25">
-                  <Smartphone className="w-5 h-5" />
+                <div className="h-11 w-11 overflow-hidden rounded-xl bg-emerald-900 shadow-lg shadow-emerald-500/20 ring-1 ring-emerald-100">
+                  <img src={logoApp} alt="Logo Lapangku" className="h-full w-full object-cover" />
                 </div>
                 <span className="font-extrabold text-2xl tracking-tight text-slate-900">Lapangku<span className="text-emerald-500">.</span></span>
               </div>
@@ -979,7 +1021,7 @@ export default function App() {
             </p>
             <div className="flex items-center gap-2">
               <span className="flex items-center gap-1 text-sm text-slate-500">
-                Dibuat dengan <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500" /> di Indonesia
+                Dibuat dengan <Heart className="w-3.5 h-3.5 text-emerald-500 fill-emerald-500" /> di Indonesia
               </span>
             </div>
           </div>

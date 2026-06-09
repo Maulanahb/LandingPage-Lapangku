@@ -35,8 +35,8 @@ export default function InteractiveDemo() {
     },
     {
       title: 'Metode Pembayaran',
-      desc: 'Menampilkan detail tagihan, petunjuk nomor rekening Bank Mandiri, dan area upload gambar bukti transfer dari galeri.',
-      tech: ['Firebase Storage', 'File Uploader']
+      desc: 'Menampilkan detail tagihan dan pilihan metode pembayaran digital melalui Midtrans dengan status transaksi otomatis.',
+      tech: ['Midtrans API', 'Payment Callback']
     },
     {
       title: 'E-Tiket Sukses',
@@ -45,7 +45,7 @@ export default function InteractiveDemo() {
     },
     {
       title: 'Riwayat Pesanan Saya',
-      desc: 'Layar untuk melacak semua pemesanan aktif maupun riwayat masa lalu (Menunggu Verifikasi, Dikonfirmasi, Selesai).',
+      desc: 'Layar untuk melacak semua pemesanan aktif maupun riwayat masa lalu (Menunggu Pembayaran, Lunas, Selesai).',
       tech: ['Firestore Snapshot', 'Status Tracker']
     }
   ];
@@ -53,7 +53,7 @@ export default function InteractiveDemo() {
   const mitraSteps = [
     {
       title: 'Dasbor Utama Mitra',
-      desc: 'Halaman ringkasan pendapatan bulanan, pesanan aktif yang harus dilayani, dan pemberitahuan verifikasi bukti bayar.',
+      desc: 'Halaman ringkasan pendapatan bulanan, pesanan aktif yang harus dilayani, dan status transaksi yang masuk dari payment gateway.',
       tech: ['Firestore Aggregates', 'Flutter Charts']
     },
     {
@@ -67,9 +67,9 @@ export default function InteractiveDemo() {
       tech: ['Firestore Write Transaction', 'Success Toast Alert']
     },
     {
-      title: 'Verifikasi Pembayaran',
-      desc: 'Pengelola mengecek bukti transfer yang diunggah customer. Satu tombol untuk menyetujui order agar status tiket berubah jadi Aktif.',
-      tech: ['Firestore Transaction', 'FCM Notification Trigger']
+      title: 'Pesanan Berbayar',
+      desc: 'Pengelola melihat detail booking yang sudah lunas dan siap dilayani tanpa proses konfirmasi pembayaran manual.',
+      tech: ['Payment Webhook', 'FCM Notification Trigger']
     },
     {
       title: 'Scanner QR Tiket',
@@ -135,7 +135,7 @@ export default function InteractiveDemo() {
 
   const getTechBadges = () => {
     if (activeTab === 'customer') {
-      return ['Flutter SDK', 'Firebase Auth', 'Cloud Firestore', 'Firebase Storage', 'Google Maps API'];
+      return ['Flutter SDK', 'Firebase Auth', 'Cloud Firestore', 'Midtrans API', 'Google Maps API'];
     }
     if (activeTab === 'mitra') {
       return ['Flutter SDK', 'Cloud Firestore', 'Firestore Transactions', 'Revenue Analytics Charts'];
@@ -201,9 +201,9 @@ export default function InteractiveDemo() {
               </h4>
               <p className="text-slate-500 text-sm leading-relaxed mb-6">
                 {activeTab === 'customer' 
-                  ? 'Simulasi alur pengguna mulai dari mencari lapangan, memilih jadwal, mengupload bukti bayar, hingga mendapatkan e-tiket digital.' 
+                  ? 'Simulasi alur pengguna mulai dari mencari lapangan, memilih jadwal, membayar via payment gateway, hingga mendapatkan e-tiket digital.' 
                   : activeTab === 'mitra' 
-                    ? 'Dasbor bisnis pengelola untuk mengatur daftar lapangan, memverifikasi slip transfer pembayaran customer, dan memantau diagram okupansi harian.' 
+                    ? 'Dasbor bisnis pengelola untuk mengatur daftar lapangan, memantau pesanan berbayar, dan melihat diagram okupansi harian.' 
                     : 'Fitur penghubung yang mempercepat check-in customer di lapangan olahraga dengan memanfaatkan validasi kamera real-time.'}
               </p>
 
@@ -234,7 +234,7 @@ export default function InteractiveDemo() {
                   {activeTab === 'customer' 
                     ? 'Klik layar handphone simulasi untuk melanjutkan langkah, geser layar ke samping, atau klik salah satu langkah alur di samping kanan.' 
                     : activeTab === 'mitra' 
-                      ? 'Gunakan form tambah lapangan atau setujui pembayaran pada simulator, dan perhatikan data pada dashboard terupdate secara real-time.' 
+                      ? 'Gunakan form tambah lapangan atau buka pesanan berbayar pada simulator, dan perhatikan data pada dashboard terupdate secara real-time.' 
                       : 'Mockup terkunci pada layar scanner. Pindahkan tab untuk melihat bagaimana e-tiket diterbitkan.'}
                 </p>
               </div>

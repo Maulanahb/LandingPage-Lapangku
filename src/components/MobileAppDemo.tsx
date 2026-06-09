@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { MapPin, CalendarClock, Smartphone, Users, CheckCircle2, PlayCircle, Dribbble, Star, Zap, Clock, Upload, UserCircle, Store, Shield, ArrowLeft, Heart, Plus, Bell, RefreshCw, Check, TrendingUp, Image, BarChart3, Search, QrCode, Trophy } from 'lucide-react';
+import { MapPin, CalendarClock, Smartphone, Users, CheckCircle2, PlayCircle, Dribbble, Star, Zap, Clock, UserCircle, Store, Shield, ArrowLeft, Heart, Plus, Bell, RefreshCw, Check, TrendingUp, BarChart3, Search, QrCode, Trophy } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import logoApp from '../../image/logoApp.png';
 
 export default function MobileAppDemo({ 
   tab = 'customer', 
@@ -32,7 +33,7 @@ export default function MobileAppDemo({
   // Customer Screens: 0: Splash, 1: Home, 2: Detail, 3: Pilih Jadwal, 4: Payment, 5: Success, 6: Pesanan Saya
   const [customerScreen, setCustomerScreen] = useState(0); 
   
-  // Mitra Screens: 0: Dashboard, 1: Manage Fields, 2: Tambah Lapangan, 3: Verifikasi Bukti, 4: QR Scanner, 5: Analisis & Laporan
+  // Mitra Screens: 0: Dashboard, 1: Manage Fields, 2: Tambah Lapangan, 3: Detail Pesanan, 4: QR Scanner, 5: Analisis & Laporan
   const [mitraScreen, setMitraScreen] = useState(0); 
   
   const [isAutoplay, setIsAutoplay] = useState(autoplay);
@@ -59,8 +60,8 @@ export default function MobileAppDemo({
     { name: 'Lapangan Badminton 1', type: 'Kayu (Badminton)', price: 'Rp 80K / jam', image: 'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?auto=format&fit=crop&q=80&w=250', status: 'Aktif' }
   ]);
 
-  // Payment confirmation status
-  const [paymentStatus, setPaymentStatus] = useState<'Menunggu Verifikasi' | 'Dikonfirmasi'>('Menunggu Verifikasi');
+  // Payment status from payment gateway
+  const [paymentStatus, setPaymentStatus] = useState<'Menunggu Pembayaran' | 'Lunas'>('Menunggu Pembayaran');
 
   // Autoplay Logic
   useEffect(() => {
@@ -338,8 +339,8 @@ export default function MobileAppDemo({
                         className="absolute inset-0 bg-gradient-to-br from-[#1B6B3A] to-[#114B27] flex flex-col items-center justify-center text-white p-6 cursor-pointer"
                         onClick={() => selectCustomerScreen(1)}
                       >
-                        <div className="bg-white/10 p-4 rounded-3xl backdrop-blur-md border border-white/20 mb-4 animate-pulse">
-                          <Smartphone className="w-10 h-10 text-white" />
+                        <div className="h-20 w-20 overflow-hidden rounded-[24px] bg-white/10 shadow-2xl shadow-black/20 ring-2 ring-white/20 mb-4 animate-pulse">
+                          <img src={logoApp} alt="Logo Lapangku" className="h-full w-full object-cover" />
                         </div>
                         <h2 className="text-xl font-extrabold tracking-tight mb-1">Lapangku<span className="text-[#D1FAE5]">.</span></h2>
                         <p className="text-[10px] text-emerald-100/70 text-center max-w-[150px]">Pesan lapangan olahraga tanpa ribet</p>
@@ -373,7 +374,7 @@ export default function MobileAppDemo({
                             <div className="flex items-center gap-2">
                               <div className="relative w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-slate-200 transition-colors">
                                 <Bell className="w-4 h-4" />
-                                <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-rose-500 rounded-full"></span>
+                                <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-emerald-500 rounded-full"></span>
                               </div>
                               <div className="w-8 h-8 rounded-full bg-[#1B6B3A] text-white flex items-center justify-center font-bold text-xs shadow-sm">
                                 B
@@ -517,7 +518,7 @@ export default function MobileAppDemo({
                             <ArrowLeft className="w-4 h-4" />
                           </button>
                           <button className="absolute top-9 right-3 w-7 h-7 bg-white rounded-full flex items-center justify-center shadow-md hover:bg-slate-50 text-slate-700">
-                            <Heart className="w-4 h-4 text-rose-500 fill-rose-500" />
+                            <Heart className="w-4 h-4 text-emerald-500 fill-emerald-500" />
                           </button>
                           <div className="absolute bottom-2.5 left-4 flex gap-1">
                             <span className="bg-[#E8F5EC] text-[#1B6B3A] text-[8px] font-extrabold px-1.5 py-0.5 rounded-full">FUTSAL</span>
@@ -671,7 +672,7 @@ export default function MobileAppDemo({
                                     }`}
                                   >
                                     <span>{slot.time}</span>
-                                    <span className={`text-[7px] mt-0.5 ${isBooked ? 'text-rose-400' : isSelected ? 'text-[#1B6B3A] font-bold' : 'text-slate-400'}`}>
+                                    <span className={`text-[7px] mt-0.5 ${isBooked ? 'text-slate-400' : isSelected ? 'text-[#1B6B3A] font-bold' : 'text-slate-400'}`}>
                                       {isBooked ? 'Terisi' : isSelected ? 'Dipilih' : 'Tersedia'}
                                     </span>
                                   </button>
@@ -743,29 +744,29 @@ export default function MobileAppDemo({
                             </div>
                           </div>
 
-                          {/* Bank Transfer Card */}
+                          {/* Payment Gateway Card */}
                           <div className="bg-white rounded-xl p-3 border border-slate-200/50 shadow-sm">
-                            <h4 className="font-extrabold text-[10.5px] text-slate-700 mb-1.5 uppercase tracking-wide">Transfer Bank</h4>
+                            <h4 className="font-extrabold text-[10.5px] text-slate-700 mb-1.5 uppercase tracking-wide">Payment Gateway</h4>
                             <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200/80 flex items-center justify-between mb-1.5">
                               <div>
-                                <div className="font-bold text-[10.5px] text-slate-800">Bank Mandiri</div>
-                                <div className="text-[10px] font-extrabold text-[#1B6B3A] tracking-wider select-text">144-00-123456-7</div>
-                                <div className="text-[8.5px] text-slate-400 font-semibold">a/n PT Lapangku Jaya Indonesia</div>
+                                <div className="font-bold text-[10.5px] text-slate-800">Midtrans Checkout</div>
+                                <div className="text-[10px] font-extrabold text-[#1B6B3A] tracking-wider">VA, QRIS, E-Wallet</div>
+                                <div className="text-[8.5px] text-slate-400 font-semibold">Transaksi diproses otomatis</div>
                               </div>
-                              <button className="bg-slate-200 text-slate-700 font-bold px-2 py-0.5 rounded text-[8px] active:bg-slate-300">Copy</button>
+                              <button className="bg-[#E8F5EC] text-[#1B6B3A] font-bold px-2 py-0.5 rounded text-[8px] active:bg-emerald-100">Pilih</button>
                             </div>
-                            <p className="text-[8px] text-slate-400 leading-normal italic">Silakan lakukan transfer sesuai jumlah di atas, kemudian unggah bukti transfer.</p>
+                            <p className="text-[8px] text-slate-400 leading-normal italic">Status booking otomatis aktif setelah pembayaran berhasil.</p>
                           </div>
 
-                          {/* Upload Bukti */}
+                          {/* Payment Status */}
                           <div className="bg-white rounded-xl p-3 border border-slate-200/50 shadow-sm">
-                            <h4 className="font-extrabold text-[10.5px] text-slate-700 mb-1.5 uppercase tracking-wide">Unggah Bukti Transfer</h4>
-                            <div className="border-2 border-dashed border-[#1B6B3A]/50 bg-[#E8F5EC]/20 rounded-xl p-3 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-emerald-50/40 transition-colors">
+                            <h4 className="font-extrabold text-[10.5px] text-slate-700 mb-1.5 uppercase tracking-wide">Status Pembayaran</h4>
+                            <div className="border border-[#1B6B3A]/20 bg-[#E8F5EC]/35 rounded-xl p-3 flex flex-col items-center justify-center text-center">
                               <div className="w-8 h-8 rounded-full bg-[#E8F5EC] flex items-center justify-center text-[#1B6B3A] mb-1.5">
-                                <Check className="w-4 h-4 font-bold" />
+                                <CheckCircle2 className="w-4 h-4 font-bold" />
                               </div>
-                              <span className="text-[9.5px] font-bold text-slate-700">bukti_transfer.png</span>
-                              <span className="text-[8.5px] text-[#1B6B3A] font-bold">Sukses Diunggah (2.1 MB)</span>
+                              <span className="text-[9.5px] font-bold text-slate-700">Checkout aman</span>
+                              <span className="text-[8.5px] text-[#1B6B3A] font-bold">Menunggu penyelesaian transaksi</span>
                             </div>
                           </div>
                         </div>
@@ -774,13 +775,13 @@ export default function MobileAppDemo({
                         <div className="absolute bottom-0 inset-x-0 bg-white border-t border-slate-100 px-4 py-2.5 z-20 shadow-[0_-4px_12px_rgba(0,0,0,0.04)]">
                           <button 
                             onClick={() => {
-                              setPaymentStatus('Menunggu Verifikasi');
+                              setPaymentStatus('Lunas');
                               selectCustomerScreen(5);
                             }}
                             className="w-full bg-[#1B6B3A] hover:bg-[#114B27] text-white font-extrabold text-[11px] py-2.5 rounded-full shadow-md shadow-[#1B6B3A]/25 transition-all active:scale-95 flex items-center justify-center gap-1.5 animate-pulse"
                           >
-                            <Upload className="w-4 h-4" />
-                            Kirim Bukti Pembayaran
+                            <CheckCircle2 className="w-4 h-4" />
+                            Bayar Sekarang
                           </button>
                         </div>
                       </motion.div>
@@ -820,10 +821,10 @@ export default function MobileAppDemo({
                               <div className="text-[11px] font-extrabold text-[#1B6B3A] tracking-wider select-all">LPG-982834</div>
                             </div>
                             <span className={`text-[8.5px] font-extrabold px-2 py-0.5 rounded-full ${
-                              paymentStatus === 'Dikonfirmasi'
+                              paymentStatus === 'Lunas'
                                 ? 'bg-[#D1FAE5] text-[#1B6B3A]'
                                 : 'bg-amber-100 text-amber-700'
-                            }`}>{paymentStatus === 'Dikonfirmasi' ? 'Dikonfirmasi' : 'Pending'}</span>
+                            }`}>{paymentStatus === 'Lunas' ? 'Lunas' : 'Pending'}</span>
                           </div>
                           <div className="space-y-1.5 text-[9.5px]">
                             <div className="flex justify-between">
@@ -881,7 +882,7 @@ export default function MobileAppDemo({
                           {/* Active Booking */}
                           <div className="bg-white rounded-2xl p-3.5 border border-slate-100 shadow-sm relative">
                             <span className={`absolute top-3.5 right-3.5 text-[7.5px] font-extrabold px-2 py-0.5 rounded-full ${
-                              paymentStatus === 'Dikonfirmasi'
+                              paymentStatus === 'Lunas'
                                 ? 'bg-[#D1FAE5] text-[#1B6B3A]'
                                 : 'bg-amber-100 text-amber-700'
                             }`}>{paymentStatus}</span>
@@ -973,7 +974,7 @@ export default function MobileAppDemo({
                           >
                             <div>
                               <div className="text-[8px] text-slate-400 font-bold uppercase">LAPORAN BULANAN</div>
-                              <div className="text-[13px] font-extrabold text-[#1B6B3A] mt-0.5">Rp {(4250000 + (paymentStatus === 'Dikonfirmasi' ? totalCost : 0)).toLocaleString('id-ID')}</div>
+                              <div className="text-[13px] font-extrabold text-[#1B6B3A] mt-0.5">Rp {(4250000 + (paymentStatus === 'Lunas' ? totalCost : 0)).toLocaleString('id-ID')}</div>
                               <div className="flex items-center gap-0.5 text-[8px] text-[#1B6B3A] font-bold mt-1">
                                 <TrendingUp className="w-2.5 h-2.5" /> +15% minggu ini
                               </div>
@@ -982,7 +983,7 @@ export default function MobileAppDemo({
                               <div className="text-[8px] text-slate-400 font-bold uppercase">PESANAN AKTIF</div>
                               <div className="text-[13px] font-extrabold text-slate-800 mt-0.5">9 Booking</div>
                               <div className="text-[8.5px] text-orange-600 font-extrabold mt-1">
-                                {paymentStatus === 'Menunggu Verifikasi' ? '3 Butuh Verifikasi' : '2 Butuh Verifikasi'}
+                                {paymentStatus === 'Menunggu Pembayaran' ? '3 Menunggu Bayar' : '2 Siap Dilayani'}
                               </div>
                             </div>
                           </div>
@@ -1010,7 +1011,7 @@ export default function MobileAppDemo({
                                 className="bg-white p-2.5 rounded-xl border border-slate-200/50 hover:bg-slate-50 cursor-pointer shadow-sm"
                               >
                                 <Check className="w-5 h-5 mx-auto text-[#1B6B3A] mb-1" />
-                                <span className="text-[8px] font-bold text-slate-700">Verifikasi</span>
+                                <span className="text-[8px] font-bold text-slate-700">Pesanan</span>
                               </div>
                             </div>
                           </div>
@@ -1031,10 +1032,10 @@ export default function MobileAppDemo({
                                   <div className="text-[8.5px] text-slate-500">Futsal A • {selectedDate}, {selectedSlots.join(', ')}</div>
                                 </div>
                                 <span className={`text-[7.5px] font-extrabold px-1.5 py-0.5 rounded ${
-                                  paymentStatus === 'Dikonfirmasi'
+                                  paymentStatus === 'Lunas'
                                     ? 'bg-emerald-100 text-emerald-800'
                                     : 'bg-amber-100 text-amber-800'
-                                }`}>{paymentStatus === 'Dikonfirmasi' ? 'Dikonfirmasi' : 'Verifikasi'}</span>
+                                }`}>{paymentStatus === 'Lunas' ? 'Lunas' : 'Menunggu'}</span>
                               </div>
                             </div>
                           </div>
@@ -1306,18 +1307,18 @@ export default function MobileAppDemo({
                           >
                             <ArrowLeft className="w-3.5 h-3.5" />
                           </button>
-                          <h3 className="text-[12.5px] font-extrabold text-slate-800">Verifikasi Pembayaran</h3>
+                          <h3 className="text-[12.5px] font-extrabold text-slate-800">Detail Pesanan</h3>
                         </div>
 
                         {/* Content */}
                         <div className="p-3 flex-1 flex flex-col justify-center items-center">
                           <div className="bg-white rounded-2xl w-full border border-slate-200/50 shadow-md p-3.5 relative overflow-hidden text-left">
                             <span className={`text-[7.5px] font-extrabold px-2 py-0.5 rounded-full absolute top-3.5 right-3.5 ${
-                              paymentStatus === 'Dikonfirmasi'
+                              paymentStatus === 'Lunas'
                                 ? 'bg-emerald-100 text-emerald-800'
                                 : 'bg-amber-100 text-amber-800'
-                            }`}>{paymentStatus === 'Dikonfirmasi' ? 'Telah Disetujui' : 'Butuh Verifikasi'}</span>
-                            <h4 className="font-extrabold text-[9px] text-slate-400 uppercase">BUKTI TRANSFER BARU</h4>
+                            }`}>{paymentStatus === 'Lunas' ? 'Lunas' : 'Menunggu Bayar'}</span>
+                            <h4 className="font-extrabold text-[9px] text-slate-400 uppercase">PESANAN CUSTOMER</h4>
                             <h3 className="text-[13px] font-extrabold text-slate-800 mb-2 border-b border-slate-100 pb-2 pt-1">Budi Santoso</h3>
                             
                             <div className="space-y-1.5 text-[9.5px] mb-4">
@@ -1330,35 +1331,29 @@ export default function MobileAppDemo({
                                 <span className="font-bold text-slate-700">{selectedDate}, {selectedSlots.join(', ')}</span>
                               </div>
                               <div className="flex justify-between">
-                                <span className="text-slate-400">Total Transfer:</span>
+                                <span className="text-slate-400">Total Tagihan:</span>
                                 <span className="font-extrabold text-[#1B6B3A]">Rp {totalCost.toLocaleString('id-ID')}</span>
                               </div>
                             </div>
 
-                            {/* Receipt preview placeholder */}
-                            <div className="border border-slate-200 bg-slate-50 rounded-xl p-2.5 flex items-center gap-3 mb-4">
-                              <div className="w-10 h-10 bg-slate-200 rounded-lg flex items-center justify-center text-slate-400 flex-shrink-0">
-                                <Image className="w-5 h-5 text-[#1B6B3A]" />
+                            {/* Payment gateway status */}
+                            <div className="border border-emerald-100 bg-emerald-50/60 rounded-xl p-2.5 flex items-center gap-3 mb-4">
+                              <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center text-[#1B6B3A] flex-shrink-0 shadow-sm">
+                                <CheckCircle2 className="w-5 h-5 text-[#1B6B3A]" />
                               </div>
                               <div className="min-w-0 flex-1">
-                                <div className="font-bold text-[9px] text-slate-800 truncate">bukti_transfer.png</div>
-                                <div className="text-[8px] text-slate-400">Slip Mandiri Terunggah</div>
+                                <div className="font-bold text-[9px] text-slate-800 truncate">Midtrans Transaction</div>
+                                <div className="text-[8px] text-slate-400">Status otomatis dari payment gateway</div>
+                                <div className="text-[8px] text-[#1B6B3A] font-extrabold mt-0.5">TRX-LPG-982834</div>
                               </div>
                             </div>
 
-                            {/* Action Buttons */}
-                            <div className="grid grid-cols-2 gap-2.5">
-                              <button className="border border-rose-500 text-rose-500 font-extrabold py-2 rounded-xl text-[10px] hover:bg-rose-50 transition-colors">Tolak</button>
-                              <button 
-                                onClick={() => {
-                                  setPaymentStatus('Dikonfirmasi');
-                                  selectMitraScreen(0); // Redirect to dashboard
-                                }}
-                                className="bg-[#1B6B3A] text-white font-extrabold py-2 rounded-xl text-[10px] hover:bg-[#114B27] shadow-sm shadow-[#1B6B3A]/25 transition-all"
-                              >
-                                Setujui
-                              </button>
-                            </div>
+                            <button 
+                              onClick={() => selectMitraScreen(4)}
+                              className="w-full bg-[#1B6B3A] text-white font-extrabold py-2 rounded-xl text-[10px] hover:bg-[#114B27] shadow-sm shadow-[#1B6B3A]/25 transition-all"
+                            >
+                              Lanjut Scan Tiket
+                            </button>
                           </div>
                         </div>
 
@@ -1466,7 +1461,7 @@ export default function MobileAppDemo({
                           {/* Financial summary widget */}
                           <div className="bg-gradient-to-br from-[#1B6B3A] to-[#114B27] text-white p-3 rounded-2xl shadow-sm">
                             <span className="text-[8px] font-bold text-emerald-200 uppercase tracking-wider">TOTAL SALDO</span>
-                            <h3 className="text-[18px] font-extrabold">Rp {(4250000 + (paymentStatus === 'Dikonfirmasi' ? totalCost : 0)).toLocaleString('id-ID')}</h3>
+                            <h3 className="text-[18px] font-extrabold">Rp {(4250000 + (paymentStatus === 'Lunas' ? totalCost : 0)).toLocaleString('id-ID')}</h3>
                             <div className="border-t border-white/20 pt-2 mt-2 flex justify-between text-[8px] text-emerald-100">
                               <span>Pencairan Terjadwal:</span>
                               <span className="font-bold">Setiap Jumat</span>
