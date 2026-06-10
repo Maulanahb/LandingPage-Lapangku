@@ -5,6 +5,7 @@ import MobileAppDemo from './components/MobileAppDemo';
 import InteractiveDemo from './components/InteractiveDemo';
 import maulanaPhoto from '../image/MAULANA_AHMAD_BUKHORI-removebg-preview.png';
 import maksumPhoto from '../image/AHMAD_ALFI_MAKSUM-removebg-preview.png';
+import galuhPhoto from '../image/Galuh Saprilia Putri-removebg-preview.png';
 import arsyaPhoto from '../image/ARSYA_FIKR_SI-removebg-preview.png';
 import logoApp from '../image/logoApp.png';
 
@@ -827,8 +828,8 @@ export default function App() {
               {[
                 { name: "Maulana Ahmad B.", role: "Customer App Lead", initial: "M", photo: maulanaPhoto, photoClass: "right-[-10px] h-[168px]" },
                 { name: "Ahmad Alfi Maksum", role: "Product Designer", initial: "MK", photo: maksumPhoto, photoClass: "right-[-8px] h-[170px]" },
-                { name: "Galuh", role: "Admin Panel Dev", initial: "G" },
-                { name: "Arsya Fikri F.", role: "Mitra Dashboard Dev", initial: "A", photo: arsyaPhoto, photoClass: "right-[-22px] h-[158px]" }
+                { name: "Galuh Saprilia Putri", role: "Admin Panel Dev", initial: "G", photo: galuhPhoto, photoClass: "right-[-10px] h-[168px]" },
+                { name: "Arsya Fikri S", role: "Mitra Dashboard Dev", initial: "A", photo: arsyaPhoto, photoClass: "right-[-22px] h-[158px]" }
               ].map((member, i) => (
                 <motion.div 
                   key={i}
